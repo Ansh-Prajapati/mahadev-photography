@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Mahadev Photography</title>
+    <link rel="stylesheet" href="../css/admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Hide from search engines */
+        
+        .no-index {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-login">
+        <div class="login-box">
+            <div class="logo">
+                <i class="fas fa-camera"></i>
+                <h2>Admin Panel</h2>
+                <p style="color:#999;font-size:0.9rem;">Mahadev Photography</p>
+            </div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="admin@mahadevphotography.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <div style="text-align:center;margin-top:20px;font-size:0.8rem;color:#999;">
+                <i class="fas fa-lock"></i> Secure Admin Access
+            </div>
+        </div>
+    </div>
+    <script src="../js/script.js"></script>
+</body>
+
+</html>

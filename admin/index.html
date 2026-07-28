@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Mahadev Photography</title>
+    <link rel="stylesheet" href="../css/admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .no-index {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-camera"></i></div>
+                <h3>Admin</h3>
+                <span>Mahadev Photography</span>
+            </div>
+            <nav class="admin-nav">
+                <a href="index.html" class="active"><i class="fas fa-dashboard"></i> <span>Dashboard</span></a>
+                <a href="packages.html"><i class="fas fa-box"></i> <span>Packages</span></a>
+                <a href="gallery.html"><i class="fas fa-photo-video"></i> <span>Gallery</span></a>
+                <a href="submissions.html"><i class="fas fa-envelope"></i> <span>Submissions</span></a>
+                <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1><i class="fas fa-dashboard"></i> Dashboard</h1>
+                <div class="admin-user">
+                    <div class="user-info">
+                        <div class="user-name">Admin</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                    <div class="user-avatar">A</div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-images"></i></div>
+                    <div class="stat-number" data-stat="portfolio">0</div>
+                    <div class="stat-label">Gallery Images</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-box"></i></div>
+                    <div class="stat-number" data-stat="packages">0</div>
+                    <div class="stat-label">Packages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-envelope"></i></div>
+                    <div class="stat-number" data-stat="submissions">0</div>
+                    <div class="stat-label">Submissions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-rupee-sign"></i></div>
+                    <div class="stat-number" data-stat="revenue">₹0</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+            </div>
+
+            <!-- Recent Submissions -->
+            <div class="admin-table-wrapper">
+                <div class="table-header">
+                    <h3><i class="fas fa-clock"></i> Recent Submissions</h3>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentSubmissions">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="../js/script.js"></script>
+</body>
+
+</html>
