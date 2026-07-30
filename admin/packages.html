@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <div class="admin-wrapper">
+        <!-- Sidebar -->
         <aside class="admin-sidebar">
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-camera"></i></div>
@@ -27,6 +26,7 @@
             </nav>
         </aside>
 
+        <!-- Main Content -->
         <main class="admin-main">
             <div class="admin-header">
                 <h1><i class="fas fa-box"></i> Manage Packages</h1>
@@ -52,26 +52,26 @@
         </main>
     </div>
 
-    <!-- Modal -->
+    <!-- Package Modal -->
     <div class="modal" id="packageModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add Package</h2>
-                <span class="modal-close">&times;</span>
+                <span class="modal-close" id="modalCloseBtn">&times;</span>
             </div>
             <form id="packageForm" class="admin-form">
                 <input type="hidden" id="packageId">
                 <div class="form-group">
-                    <label for="pkgName">Package Name <span class="required">*</span></label>
-                    <input type="text" id="pkgName" placeholder="e.g., Gold Package" required>
+                    <label>Package Name <span class="required">*</span></label>
+                    <input type="text" id="pkgName" placeholder="e.g., Gold Package">
                 </div>
                 <div class="form-group">
-                    <label for="pkgPrice">Price (₹) <span class="required">*</span></label>
-                    <input type="number" id="pkgPrice" placeholder="e.g., 29999" required>
+                    <label>Price (₹) <span class="required">*</span></label>
+                    <input type="number" id="pkgPrice" placeholder="e.g., 29999">
                 </div>
                 <div class="form-group">
-                    <label for="pkgFeatures">Features (one per line) <span class="required">*</span></label>
-                    <textarea id="pkgFeatures" rows="4" placeholder="4 hours coverage&#10;100+ edited photos&#10;Online gallery" required></textarea>
+                    <label>Features (one per line) <span class="required">*</span></label>
+                    <textarea id="pkgFeatures" rows="4" placeholder="4 hours coverage&#10;100+ edited photos&#10;Online gallery"></textarea>
                 </div>
                 <div class="form-group">
                     <label>
@@ -84,6 +84,82 @@
     </div>
 
     <script src="../js/script.js"></script>
-</body>
+    <script>
+        // ========================================
+        // PACKAGE MODAL - FIXED CLOSE BUTTON
+        // ========================================
 
+        // Get modal elements
+        var modal = document.getElementById('packageModal');
+        var closeBtn = document.getElementById('modalCloseBtn');
+        var addBtn = document.getElementById('addPackageBtn');
+
+        // Open modal when Add Package button is clicked
+        if (addBtn) {
+            addBtn.addEventListener('click', function() {
+                openPackageModal(null);
+            });
+        }
+
+        // Close modal when X button is clicked - FIXED!
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+        }
+
+        // Close modal when clicking outside the modal
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+        });
+
+        // ========================================
+        // PACKAGE FUNCTIONS
+        // ========================================
+
+        function openPackageModal(pkg) {
+            var modal = document.getElementById('packageModal');
+            var form = document.getElementById('packageForm');
+            var title = document.getElementById('modalTitle');
+            
+            if (!modal || !form) return;
+            
+            title.textContent = pkg ? 'Edit Package' : 'Add New Package';
+            form.reset();
+            document.getElementById('packageId').value = pkg ? pkg.id : '';
+            document.getElementById('pkgName').value = pkg ? pkg.name : '';
+            document.getElementById('pkgPrice').value = pkg ? pkg.price : '';
+            document.getElementById('pkgFeatures').value = pkg ? pkg.features.join('\n') : '';
+            document.getElementById('pkgFeatured').checked = pkg ? pkg.featured : false;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            var modal = document.getElementById('packageModal');
+            var modal2 = document.getElementById('portfolioModal');
+            if (modal) modal.classList.remove('active');
+            if (modal2) modal2.classList.remove('active');
+        }
+
+        // Override the global closeModal function
+        window.closeModal = closeModal;
+        window.openPackageModal = openPackageModal;
+
+        console.log('✅ Package modal close button fixed!');
+    </script>
+</body>
 </html>

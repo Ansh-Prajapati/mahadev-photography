@@ -98,7 +98,7 @@ function isAuthenticated() {
 }
 
 function loginAdmin(email, password) {
-    if (email === 'admin@mahadevphotography.com' && password === 'admin123') {
+    if (email === 'mahadevphotography1921@gmail.com' && password === 'Brijesh@312') {
         localStorage.setItem('adminAuth', 'true');
         return true;
     }
@@ -145,15 +145,31 @@ function showToast(message, type) {
 }
 
 // ========================================
-// NAVIGATION
+// MOBILE NAVIGATION
 // ========================================
 function initNavigation() {
-    var hamburger = document.querySelector('.hamburger');
-    var navMenu = document.querySelector('.nav-menu');
+    var hamburger = document.getElementById('hamburger');
+    var navMenu = document.getElementById('navMenu');
 
     if (hamburger && navMenu) {
-        hamburger.addEventListener('click', function() {
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
             navMenu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) {
+                navMenu.classList.remove('active');
+                hamburger.classList.remove('active');
+            }
+        });
+
+        navMenu.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                navMenu.classList.remove('active');
+                hamburger.classList.remove('active');
+            });
         });
     }
 
@@ -315,7 +331,7 @@ function closeLightbox() {
 }
 
 // ========================================
-// GALLERY FUNCTIONS (Client Side)
+// CLIENT SIDE GALLERY FUNCTIONS
 // ========================================
 function loadGalleryPreview() {
     var container = document.getElementById('galleryPreview');
@@ -355,9 +371,9 @@ function loadGalleryPage() {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
         html += '<div class="gallery-item" data-id="' + item.id + '">';
         html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/400x300/eee/999?text=Image+Not+Found\';">';
-        html += '<div class="gallery-overlay" style="position:absolute;bottom:0;left:0;right:0;padding:30px 20px 20px;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);opacity:0;transition:all 0.3s ease;">';
-        html += '<h3 style="color:white;font-size:1.1rem;margin:0;">' + item.title + '</h3>';
-        html += '<p style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin:5px 0 0;">' + (item.description || '') + '</p>';
+        html += '<div class="gallery-overlay">';
+        html += '<h3>' + item.title + '</h3>';
+        html += '<p>' + (item.description || '') + '</p>';
         html += '</div></div>';
     });
     container.innerHTML = html;
@@ -404,37 +420,106 @@ function loadPackages() {
 }
 
 // ========================================
-// CONTACT FORM
+// CONTACT FORM WITH FORMSPREE
 // ========================================
 function initContactForm() {
     var form = document.getElementById('contactForm');
     if (!form) return;
 
+    var statusDiv = document.getElementById('formStatus');
+    var submitBtn = document.getElementById('submitBtn');
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        var formData = {
-            id: Date.now(),
-            name: document.getElementById('name').value.trim(),
-            email: document.getElementById('email').value.trim(),
-            phone: document.getElementById('phone').value.trim(),
-            service: document.getElementById('service').value,
-            message: document.getElementById('message').value.trim(),
-            date: new Date().toLocaleString(),
-            status: 'new'
-        };
+        if (statusDiv) {
+            statusDiv.className = 'form-status loading';
+            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending your message...';
+        }
+        if (submitBtn) {
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+        }
 
-        if (!formData.name || !formData.email || !formData.service || !formData.message) {
-            showToast('Please fill in all required fields.', 'error');
+        var name = document.getElementById('name').value.trim();
+        var email = document.getElementById('email').value.trim();
+        var phone = document.getElementById('phone').value.trim();
+        var service = document.getElementById('service').value;
+        var message = document.getElementById('message').value.trim();
+
+        if (!name || !email || !service || !message) {
+            if (statusDiv) {
+                statusDiv.className = 'form-status error';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please fill in all required fields.';
+            }
+            if (submitBtn) {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
             return;
         }
 
-        var submissions = DataStore.get('submissions');
-        submissions.push(formData);
-        DataStore.set('submissions', submissions);
+        var formData = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://formspree.io/f/mkodknzq', true);
+        xhr.setRequestHeader('Accept', 'application/json');
 
-        showToast('Thank you! Your message has been sent successfully.', 'success');
-        form.reset();
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                if (statusDiv) {
+                    statusDiv.className = 'form-status success';
+                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Thank you! Your message has been sent successfully.';
+                }
+                if (submitBtn) {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                }
+                form.reset();
+
+                var submissions = DataStore.get('submissions');
+                submissions.push({
+                    id: Date.now(),
+                    name: name,
+                    email: email,
+                    phone: phone || 'N/A',
+                    service: service,
+                    message: message,
+                    date: new Date().toLocaleString(),
+                    status: 'new'
+                });
+                DataStore.set('submissions', submissions);
+
+                setTimeout(function() {
+                    if (statusDiv) {
+                        statusDiv.style.display = 'none';
+                        statusDiv.className = 'form-status';
+                        statusDiv.innerHTML = '';
+                    }
+                }, 10000);
+            } else {
+                if (statusDiv) {
+                    statusDiv.className = 'form-status error';
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Oops! Something went wrong. Please try again.';
+                }
+                if (submitBtn) {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                }
+            }
+        };
+
+        xhr.onerror = function() {
+            if (statusDiv) {
+                statusDiv.className = 'form-status error';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Network error. Please check your connection.';
+            }
+            if (submitBtn) {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
+        };
+
+        xhr.send(formData);
     });
 }
 
@@ -546,7 +631,7 @@ function initAdminDashboard() {
 }
 
 // ========================================
-// ADMIN PACKAGES
+// ADMIN PACKAGES (CRUD)
 // ========================================
 function initAdminPackages() {
     var table = document.getElementById('packagesTable');
@@ -606,6 +691,10 @@ function renderPackagesTable(table) {
     table.innerHTML = html;
 }
 
+// ========================================
+// PACKAGE MODAL FUNCTIONS
+// ========================================
+
 function openPackageModal(pkg) {
     var modal = document.getElementById('packageModal');
     var form = document.getElementById('packageForm');
@@ -623,6 +712,17 @@ function openPackageModal(pkg) {
 
     modal.classList.add('active');
 }
+
+function closeModal() {
+    var modal = document.getElementById('packageModal');
+    var modal2 = document.getElementById('portfolioModal');
+    if (modal) modal.classList.remove('active');
+    if (modal2) modal2.classList.remove('active');
+}
+
+// Make them global
+window.openPackageModal = openPackageModal;
+window.closeModal = closeModal;
 
 function closeModal() {
     var modal = document.getElementById('packageModal');
@@ -819,7 +919,7 @@ window.deleteSubmission = function(id) {
 };
 
 // ========================================
-// ADMIN GALLERY - COMPLETE CRUD
+// ADMIN GALLERY (FULL CRUD)
 // ========================================
 function initAdminGallery() {
     console.log('Initializing Admin Gallery...');
@@ -932,12 +1032,8 @@ function renderAdminGallery(container) {
     var html = '';
     items.forEach(function(item, index) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-        var isFeatured = item.featured || false;
 
-        html += '<div class="gallery-card" data-id="' + item.id + '">';
-        if (isFeatured) {
-            html += '<div class="badge-featured"><i class="fas fa-star"></i> Featured</div>';
-        }
+        html += '<div class="gallery-card">';
         html += '<div class="image-wrapper">';
         html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
         html += '<div class="image-overlay">';
@@ -965,15 +1061,12 @@ function renderAdminGallery(container) {
 function updateStats() {
     var items = DataStore.get('portfolio');
 
-    // Total
     var totalEl = document.getElementById('totalImages');
     if (totalEl) totalEl.textContent = items.length;
 
-    // Count by category
-    var weddingCount = 0;
-    var eventCount = 0;
-    var portraitCount = 0;
-
+    var weddingCount = 0,
+        eventCount = 0,
+        portraitCount = 0;
     items.forEach(function(item) {
         if (item.category === 'wedding') weddingCount++;
         else if (item.category === 'event') eventCount++;
@@ -1055,7 +1148,6 @@ window.quickAddImage = function() {
         return;
     }
 
-    // Auto-add images/ prefix if needed
     if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('images/')) {
         url = 'images/' + url;
         urlInput.value = url;
@@ -1063,7 +1155,6 @@ window.quickAddImage = function() {
 
     var portfolio = DataStore.get('portfolio');
 
-    // Check duplicate
     var exists = false;
     for (var i = 0; i < portfolio.length; i++) {
         if (portfolio[i].image === url) {
@@ -1092,7 +1183,6 @@ window.quickAddImage = function() {
     if (titleInput) titleInput.value = '';
     if (descriptionInput) descriptionInput.value = '';
 
-    // Reset preview
     var preview = document.getElementById('quickPreview');
     if (preview) {
         preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL or path above</small></div>';
@@ -1184,7 +1274,6 @@ function openPortfolioModal(item) {
     document.getElementById('portImage').value = item ? item.image : '';
     document.getElementById('portDescription').value = item ? item.description : '';
 
-    // Show preview in modal
     if (item && item.image) {
         preview.innerHTML = '<img src="' + item.image + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'>Image not found</div>\'">';
     } else {
@@ -1211,7 +1300,6 @@ function savePortfolio(form) {
         return;
     }
 
-    // Auto-add images/ prefix if needed
     if (!item.image.startsWith('http://') && !item.image.startsWith('https://') && !item.image.startsWith('images/')) {
         item.image = 'images/' + item.image;
     }
@@ -1219,7 +1307,6 @@ function savePortfolio(form) {
     var portfolio = DataStore.get('portfolio');
 
     if (id) {
-        // UPDATE
         var index = -1;
         for (var i = 0; i < portfolio.length; i++) {
             if (portfolio[i].id === id) {
@@ -1238,7 +1325,6 @@ function savePortfolio(form) {
         }
         showToast('✅ Image updated successfully!', 'success');
     } else {
-        // CREATE
         item.id = Date.now() + Math.random() * 1000;
         portfolio.push(item);
         showToast('✅ Image added successfully!', 'success');
@@ -1282,7 +1368,6 @@ function handleUrlUpload() {
 
     for (var j = 0; j < urls.length; j++) {
         var url = urls[j];
-        // Auto-add images/ prefix if needed
         if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('images/')) {
             url = 'images/' + url;
         }

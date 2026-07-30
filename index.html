@@ -2,12 +2,12 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>Mahadev Photography - Capturing Moments, Creating Memories</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
 </head>
 
 <body>
@@ -20,13 +20,13 @@
                     <span>Mahadev Photography</span>
                 </a>
             </div>
-            <ul class="nav-menu">
+            <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html" class="active">Home</a></li>
                 <li><a href="packages.html">Packages</a></li>
                 <li><a href="gallery.html">Gallery</a></li>
                 <li><a href="contact.html">Contact</a></li>
             </ul>
-            <div class="hamburger">
+            <div class="hamburger" id="hamburger">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -46,27 +46,12 @@
                 <a href="contact.html" class="btn btn-secondary">Book Now</a>
             </div>
         </div>
-        <div class="hero-stats">
-            <div class="stat-item">
-                <span class="stat-number" data-count="500">0</span>
-                <span class="stat-label">Happy Clients</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="1200">0</span>
-                <span class="stat-label">Photos Captured</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="8">0</span>
-                <span class="stat-label">Years Experience</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="150">0</span>
-                <span class="stat-label">Events Covered</span>
-            </div>
+
+
         </div>
     </section>
 
-    <!-- Services Preview -->
+    <!-- Services -->
     <section class="services-preview">
         <div class="container">
             <div class="section-header">
@@ -76,30 +61,22 @@
             </div>
             <div class="services-grid">
                 <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-ring"></i>
-                    </div>
+                    <div class="service-icon"><i class="fas fa-ring"></i></div>
                     <h3>Wedding Photography</h3>
                     <p>Elegant and timeless wedding photography that tells your unique love story.</p>
                 </div>
                 <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-calendar-day"></i>
-                    </div>
+                    <div class="service-icon"><i class="fas fa-calendar-day"></i></div>
                     <h3>Event Coverage</h3>
                     <p>Comprehensive coverage for corporate events, parties, and special occasions.</p>
                 </div>
                 <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <div class="service-icon"><i class="fas fa-user"></i></div>
                     <h3>Portrait Sessions</h3>
                     <p>Professional portraits that capture personality and create lasting impressions.</p>
                 </div>
                 <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-tree"></i>
-                    </div>
+                    <div class="service-icon"><i class="fas fa-tree"></i></div>
                     <h3>Nature & Landscape</h3>
                     <p>Breathtaking landscapes and nature photography that showcases the beauty of the world.</p>
                 </div>
@@ -107,7 +84,7 @@
         </div>
     </section>
 
-    <!-- Gallery Preview (Replacing Featured Portfolio) -->
+    <!-- Gallery Preview -->
     <section class="featured-portfolio">
         <div class="container">
             <div class="section-header">
@@ -115,9 +92,7 @@
                 <h2>Photo Gallery</h2>
                 <p>Explore some of our favorite captures that showcase our style and expertise.</p>
             </div>
-            <div class="portfolio-grid" id="galleryPreview">
-                <!-- Dynamically loaded from localStorage -->
-            </div>
+            <div class="portfolio-grid" id="galleryPreview"></div>
             <div class="text-center">
                 <a href="gallery.html" class="btn btn-primary">View Full Gallery</a>
             </div>
@@ -126,7 +101,7 @@
 
 
 
-    <!-- CTA Section -->
+    <!-- CTA -->
     <section class="cta-section">
         <div class="container">
             <div class="cta-content">
@@ -147,7 +122,9 @@
                     <div class="social-links">
                         <a href="#"><i class="fab fa-instagram"></i></a>
 
-                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" title="YouTube" style="background:#FF0000;">
+                            <i class="fab fa-youtube"></i>
+                        </a>
 
                     </div>
                 </div>
@@ -164,19 +141,19 @@
                     <h4>Services</h4>
                     <ul>
                         <li>Wedding Photography</li>
-                        <li>Engagement Photography</li>
+                        <li>Engagement Photograhy</li>
                         <li>Pre-Wedding Photography</li>
-                        <li>Maternity Photography</li>
+                        <li>Maternity Shoot</li>
                         <li>Modeling Shoot</li>
                     </ul>
                 </div>
                 <div class="footer-col">
                     <h4>Contact Info</h4>
                     <ul>
-                        <li><i class="fas fa-phone"></i> +91 9426424213</li>
-                        <li><i class="fas fa-phone"></i> +91 8160842921</li>
-                        <li><i class="fas fa-envelope"></i> mahadevphotography1921@gmail.com</li>
-                        <li><i class="fas fa-map-marker-alt"></i> Madhav 99, Vastral, Ahmedabad</li>
+                        <li><i class="fas fa-phone"></i> +91 94264 24213</li>
+                        <li><i class="fas fa-phone"></i> +91 81608 42941</li>
+                        <li><i class="fas fa-envelope"></i>mahadevphotography1921@gmail.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i>Madhav 99, Vastral, Ahmedabad</li>
                     </ul>
                 </div>
             </div>

@@ -8,11 +8,6 @@
     <link rel="stylesheet" href="../css/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        .no-index {
-            display: none;
-        }
-    </style>
 </head>
 
 <body>
@@ -46,26 +41,26 @@
                 </div>
             </div>
 
-            <!-- Stats -->
+            <!-- Stats Cards -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon blue"><i class="fas fa-images"></i></div>
-                    <div class="stat-number" data-stat="portfolio">0</div>
+                    <div class="stat-number" id="statPortfolio">0</div>
                     <div class="stat-label">Gallery Images</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon green"><i class="fas fa-box"></i></div>
-                    <div class="stat-number" data-stat="packages">0</div>
+                    <div class="stat-number" id="statPackages">0</div>
                     <div class="stat-label">Packages</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon orange"><i class="fas fa-envelope"></i></div>
-                    <div class="stat-number" data-stat="submissions">0</div>
+                    <div class="stat-number" id="statSubmissions">0</div>
                     <div class="stat-label">Submissions</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon red"><i class="fas fa-rupee-sign"></i></div>
-                    <div class="stat-number" data-stat="revenue">₹0</div>
+                    <div class="stat-number" id="statRevenue">₹0</div>
                     <div class="stat-label">Total Revenue</div>
                 </div>
             </div>
@@ -91,7 +86,91 @@
             </div>
         </main>
     </div>
+
     <script src="../js/script.js"></script>
+    <script>
+        // ========================================
+        // DASHBOARD - FIXED
+        // ========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📊 Dashboard Initializing...');
+            initAdminDashboard();
+        });
+
+        function initAdminDashboard() {
+            console.log('📊 Loading Dashboard Data...');
+
+            // Get data from localStorage
+            var portfolio = DataStore.get('portfolio');
+            var packages = DataStore.get('packages');
+            var submissions = DataStore.get('submissions');
+
+            console.log('📸 Portfolio:', portfolio.length);
+            console.log('📦 Packages:', packages.length);
+            console.log('📩 Submissions:', submissions.length);
+
+            // Update stats with proper number handling
+            var portfolioCount = Array.isArray(portfolio) ? portfolio.length : 0;
+            var packagesCount = Array.isArray(packages) ? packages.length : 0;
+            var submissionsCount = Array.isArray(submissions) ? submissions.length : 0;
+
+            // Calculate total revenue
+            var totalRevenue = 0;
+            if (Array.isArray(packages)) {
+                packages.forEach(function(pkg) {
+                    var price = parseFloat(pkg.price) || 0;
+                    totalRevenue += price;
+                });
+            }
+
+            // Update DOM elements
+            var statPortfolio = document.getElementById('statPortfolio');
+            var statPackages = document.getElementById('statPackages');
+            var statSubmissions = document.getElementById('statSubmissions');
+            var statRevenue = document.getElementById('statRevenue');
+
+            if (statPortfolio) statPortfolio.textContent = portfolioCount;
+            if (statPackages) statPackages.textContent = packagesCount;
+            if (statSubmissions) statSubmissions.textContent = submissionsCount;
+            if (statRevenue) statRevenue.textContent = '₹' + totalRevenue.toLocaleString();
+
+            // Recent Submissions
+            var recentTable = document.getElementById('recentSubmissions');
+            if (recentTable) {
+                // Get last 5 submissions (newest first)
+                var recent = [];
+                if (Array.isArray(submissions)) {
+                    recent = submissions.slice(-5).reverse();
+                }
+
+                if (recent.length === 0) {
+                    recentTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No submissions yet.</td></tr>';
+                } else {
+                    var html = '';
+                    recent.forEach(function(s) {
+                        var statusColor = s.status === 'new' ? '#e74c3c' : '#27ae60';
+                        var statusText = s.status || 'new';
+                        var dateText = s.date || new Date().toLocaleString();
+
+                        html += '<tr>';
+                        html += '<td><strong>' + (s.name || 'Unknown') + '</strong></td>';
+                        html += '<td>' + (s.email || 'N/A') + '</td>';
+                        html += '<td><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;">' + statusText + '</span></td>';
+                        html += '<td>' + dateText + '</td>';
+                        html += '</tr>';
+                    });
+                    recentTable.innerHTML = html;
+                }
+            }
+
+            console.log('✅ Dashboard Updated Successfully!');
+        }
+
+        // Make DataStore accessible globally
+        window.DataStore = DataStore;
+        window.initAdminDashboard = initAdminDashboard;
+    </script>
 </body>
 
 </html>

@@ -9,26 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ========================================
-           GALLERY ADMIN - ENHANCED STYLES
-           ======================================== */
-        
-         :root {
-            --gallery-primary: #2c3e50;
-            --gallery-accent: #e74c3c;
-            --gallery-success: #27ae60;
-            --gallery-warning: #f39c12;
-            --gallery-danger: #e74c3c;
-            --gallery-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --gallery-shadow-hover: 0 8px 40px rgba(0, 0, 0, 0.15);
-            --gallery-radius: 16px;
-            --gallery-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
         .gallery-container {
             padding: 20px 0;
         }
-        /* Stats Bar */
         
         .gallery-stats {
             display: grid;
@@ -40,18 +23,18 @@
         .stat-box {
             background: white;
             padding: 20px 25px;
-            border-radius: var(--gallery-radius);
-            box-shadow: var(--gallery-shadow);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             display: flex;
             align-items: center;
             gap: 18px;
-            transition: var(--gallery-transition);
-            border-left: 4px solid var(--gallery-accent);
+            transition: all 0.3s ease;
+            border-left: 4px solid #e74c3c;
         }
         
         .stat-box:hover {
             transform: translateY(-3px);
-            box-shadow: var(--gallery-shadow-hover);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
         
         .stat-box .stat-icon {
@@ -86,7 +69,7 @@
             font-size: 1.8rem;
             font-weight: 700;
             margin: 0;
-            color: var(--gallery-primary);
+            color: #2c3e50;
         }
         
         .stat-box .stat-info p {
@@ -95,20 +78,19 @@
             font-size: 0.85rem;
             font-weight: 500;
         }
-        /* Add Image Section */
         
         .add-image-section {
             background: white;
-            border-radius: var(--gallery-radius);
+            border-radius: 12px;
             padding: 30px;
-            box-shadow: var(--gallery-shadow);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             margin-bottom: 30px;
         }
         
         .add-image-section .section-title {
             font-size: 1.2rem;
             font-weight: 600;
-            color: var(--gallery-primary);
+            color: #2c3e50;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -116,7 +98,7 @@
         }
         
         .add-image-section .section-title i {
-            color: var(--gallery-accent);
+            color: #e74c3c;
         }
         
         .add-image-grid {
@@ -132,13 +114,13 @@
         .add-image-grid .form-group label {
             display: block;
             font-weight: 600;
-            color: var(--gallery-primary);
+            color: #2c3e50;
             font-size: 0.9rem;
             margin-bottom: 5px;
         }
         
         .add-image-grid .form-group label .required {
-            color: var(--gallery-danger);
+            color: #e74c3c;
         }
         
         .add-image-grid .form-group input,
@@ -149,7 +131,7 @@
             border: 2px solid #e8e8e8;
             border-radius: 10px;
             font-size: 0.95rem;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
             background: #fafafa;
             font-family: 'Inter', sans-serif;
         }
@@ -178,7 +160,7 @@
             align-items: center;
             justify-content: center;
             border: 2px dashed #ddd;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
             flex-direction: column;
         }
         
@@ -210,11 +192,11 @@
             font-size: 1rem;
             font-weight: 600;
             border-radius: 10px;
-            background: linear-gradient(135deg, var(--gallery-accent), #c0392b);
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
             border: none;
             cursor: pointer;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
             width: 100%;
         }
@@ -224,25 +206,18 @@
             box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
         }
         
-        .add-image-grid .btn-add:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        /* Bulk Upload Section */
-        
         .bulk-upload-section {
             background: white;
-            border-radius: var(--gallery-radius);
+            border-radius: 12px;
             padding: 30px;
-            box-shadow: var(--gallery-shadow);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             margin-bottom: 30px;
         }
         
         .bulk-upload-section .section-title {
             font-size: 1.2rem;
             font-weight: 600;
-            color: var(--gallery-primary);
+            color: #2c3e50;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -250,7 +225,7 @@
         }
         
         .bulk-upload-section .section-title i {
-            color: var(--gallery-success);
+            color: #27ae60;
         }
         
         .bulk-upload-area {
@@ -270,7 +245,7 @@
             resize: vertical;
             min-height: 120px;
             background: #fafafa;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
         }
         
         .bulk-upload-area textarea:focus {
@@ -285,11 +260,11 @@
             font-size: 1rem;
             font-weight: 600;
             border-radius: 10px;
-            background: var(--gallery-success);
+            background: #27ae60;
             color: white;
             border: none;
             cursor: pointer;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
             align-self: flex-end;
         }
@@ -298,7 +273,6 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
         }
-        /* Gallery Grid */
         
         .gallery-grid-header {
             display: flex;
@@ -309,12 +283,12 @@
         
         .gallery-grid-header h2 {
             font-size: 1.5rem;
-            color: var(--gallery-primary);
+            color: #2c3e50;
             font-family: 'Playfair Display', serif;
         }
         
         .gallery-grid-header h2 i {
-            color: var(--gallery-accent);
+            color: #e74c3c;
             margin-right: 10px;
         }
         
@@ -330,7 +304,7 @@
             font-weight: 600;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
         }
         
         .gallery-grid-header .gallery-actions .btn-refresh {
@@ -340,11 +314,10 @@
         
         .gallery-grid-header .gallery-actions .btn-refresh:hover {
             background: #2980b9;
-            transform: rotate(45deg);
         }
         
         .gallery-grid-header .gallery-actions .btn-clear {
-            background: var(--gallery-danger);
+            background: #e74c3c;
             color: white;
         }
         
@@ -361,17 +334,16 @@
         
         .gallery-card {
             background: white;
-            border-radius: var(--gallery-radius);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--gallery-shadow);
-            transition: var(--gallery-transition);
-            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
             border: 2px solid transparent;
         }
         
         .gallery-card:hover {
             transform: translateY(-8px);
-            box-shadow: var(--gallery-shadow-hover);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
             border-color: #3498db;
         }
         
@@ -386,7 +358,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
         }
         
         .gallery-card:hover .image-wrapper img {
@@ -401,7 +373,7 @@
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
             opacity: 0;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -419,7 +391,7 @@
             font-weight: 600;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -427,7 +399,7 @@
         
         .gallery-card .image-wrapper .image-overlay .btn-view {
             background: white;
-            color: var(--gallery-primary);
+            color: #2c3e50;
         }
         
         .gallery-card .image-wrapper .image-overlay .btn-view:hover {
@@ -437,7 +409,7 @@
         
         .gallery-card .image-wrapper .image-overlay .btn-edit {
             background: white;
-            color: var(--gallery-primary);
+            color: #2c3e50;
         }
         
         .gallery-card .image-wrapper .image-overlay .btn-edit:hover {
@@ -447,11 +419,11 @@
         
         .gallery-card .image-wrapper .image-overlay .btn-delete {
             background: white;
-            color: var(--gallery-primary);
+            color: #2c3e50;
         }
         
         .gallery-card .image-wrapper .image-overlay .btn-delete:hover {
-            background: var(--gallery-danger);
+            background: #e74c3c;
             color: white;
         }
         
@@ -472,18 +444,13 @@
             margin-bottom: 10px;
         }
         
-        .gallery-card .image-wrapper .image-error small {
-            color: #bbb;
-            font-size: 0.8rem;
-        }
-        
         .gallery-card .card-body {
             padding: 18px 20px;
         }
         
         .gallery-card .card-body .card-title {
             font-weight: 600;
-            color: var(--gallery-primary);
+            color: #2c3e50;
             font-size: 1rem;
             margin: 0 0 4px 0;
             white-space: nowrap;
@@ -509,7 +476,6 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             line-clamp: 2;
-            /* Standard property for compatibility */
             overflow: hidden;
         }
         
@@ -538,7 +504,7 @@
             font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
-            transition: var(--gallery-transition);
+            transition: all 0.3s ease;
         }
         
         .gallery-card .card-footer .card-actions .btn-edit-sm {
@@ -551,7 +517,7 @@
         }
         
         .gallery-card .card-footer .card-actions .btn-delete-sm {
-            background: var(--gallery-danger);
+            background: #e74c3c;
             color: white;
         }
         
@@ -559,29 +525,13 @@
             background: #c0392b;
         }
         
-        .gallery-card .badge-featured {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: var(--gallery-warning);
-            color: white;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            box-shadow: 0 2px 10px rgba(243, 156, 18, 0.3);
-            z-index: 2;
-        }
-        
         .empty-gallery-state {
             grid-column: 1 / -1;
             text-align: center;
             padding: 80px 20px;
             background: white;
-            border-radius: var(--gallery-radius);
-            box-shadow: var(--gallery-shadow);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         }
         
         .empty-gallery-state i {
@@ -592,7 +542,7 @@
         }
         
         .empty-gallery-state h3 {
-            color: var(--gallery-primary);
+            color: #2c3e50;
             font-size: 1.5rem;
             margin-bottom: 10px;
         }
@@ -601,26 +551,113 @@
             color: #999;
             font-size: 1rem;
         }
-        /* Modal Enhancements */
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
         
         .modal-content {
-            border-radius: var(--gallery-radius);
+            background: white;
+            border-radius: 16px;
             padding: 35px;
-            max-width: 550px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
         
-        .modal-content .modal-header {
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 15px;
+        @keyframes modalIn {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
         }
         
-        .modal-content .modal-header h2 {
+        .modal-header h2 {
             font-family: 'Playfair Display', serif;
-            color: var(--gallery-primary);
+            color: #2c3e50;
+            margin: 0;
+            font-size: 1.5rem;
         }
         
-        .modal-content .modal-preview {
+        .modal-close {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: #e74c3c;
+            transform: rotate(90deg);
+        }
+        
+        .admin-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .admin-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+        
+        .admin-form input,
+        .admin-form select,
+        .admin-form textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .admin-form input:focus,
+        .admin-form select:focus,
+        .admin-form textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+            background: white;
+        }
+        
+        .modal-preview {
             text-align: center;
             margin: 15px 0;
             padding: 15px;
@@ -633,23 +670,19 @@
             justify-content: center;
         }
         
-        .modal-content .modal-preview img {
+        .modal-preview img {
             max-width: 100%;
             max-height: 200px;
             border-radius: 8px;
         }
         
-        .modal-content .modal-preview .no-preview {
+        .modal-preview .no-preview {
             color: #bbb;
         }
-        /* Responsive */
         
         @media (max-width: 992px) {
             .add-image-grid {
                 grid-template-columns: 1fr;
-            }
-            .add-image-grid .preview-box {
-                min-height: 150px;
             }
         }
         
@@ -659,11 +692,6 @@
             }
             .gallery-grid {
                 grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            }
-            .gallery-grid-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
             }
             .bulk-upload-area {
                 flex-direction: column;
@@ -679,17 +707,6 @@
             }
             .gallery-grid {
                 grid-template-columns: 1fr;
-            }
-            .gallery-card .image-wrapper .image-overlay {
-                flex-wrap: wrap;
-                padding: 10px;
-            }
-            .gallery-card .image-wrapper .image-overlay button {
-                padding: 6px 12px;
-                font-size: 0.75rem;
-            }
-            .modal-content {
-                padding: 20px;
             }
         }
     </style>
@@ -725,8 +742,8 @@
             </div>
 
             <div class="gallery-container">
-                <!-- Stats Bar -->
-                <div class="gallery-stats" id="galleryStats">
+                <!-- Stats -->
+                <div class="gallery-stats">
                     <div class="stat-box">
                         <div class="stat-icon blue"><i class="fas fa-images"></i></div>
                         <div class="stat-info">
@@ -765,8 +782,8 @@
                     <div class="add-image-grid">
                         <div>
                             <div class="form-group">
-                                <label>Image URL or Path <span class="required">*</span></label>
-                                <input type="text" id="quickImageUrl" placeholder="images/photo.jpg or https://example.com/photo.jpg">
+                                <label>Image URL <span class="required">*</span></label>
+                                <input type="text" id="quickImageUrl" placeholder="https://example.com/image.jpg">
                             </div>
                             <div class="form-group">
                                 <label>Title <span class="required">*</span></label>
@@ -786,7 +803,7 @@
                                 <label>Description</label>
                                 <textarea id="quickDescription" placeholder="Brief description (optional)"></textarea>
                             </div>
-                            <button class="btn-add" id="quickAddBtn" onclick="quickAddImage()">
+                            <button class="btn-add" onclick="quickAddImage()">
                                 <i class="fas fa-plus"></i> Add Image
                             </button>
                         </div>
@@ -795,20 +812,20 @@
                                 <div class="placeholder">
                                     <i class="fas fa-image"></i>
                                     <p>Image preview will appear here</p>
-                                    <small style="color:#bbb;">Enter a URL or path above</small>
+                                    <small style="color:#bbb;">Enter a URL above</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Bulk Upload Section -->
+                <!-- Bulk Upload -->
                 <div class="bulk-upload-section">
                     <div class="section-title">
                         <i class="fas fa-layer-group"></i> Bulk Upload
                     </div>
                     <div class="bulk-upload-area">
-                        <textarea id="urlInput" placeholder="Paste one image path or URL per line&#10;images/photo1.jpg&#10;images/photo2.jpg&#10;https://example.com/photo3.jpg"></textarea>
+                        <textarea id="urlInput" placeholder="Paste one image URL per line&#10;https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg"></textarea>
                         <button class="btn-bulk" onclick="handleUrlUpload()">
                             <i class="fas fa-upload"></i> Add All
                         </button>
@@ -824,9 +841,7 @@
                     </div>
                 </div>
 
-                <div class="gallery-grid" id="adminGalleryGrid">
-                    <!-- Loaded dynamically -->
-                </div>
+                <div class="gallery-grid" id="adminGalleryGrid"></div>
             </div>
         </main>
     </div>
@@ -855,8 +870,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Image URL or Path <span class="required">*</span></label>
-                    <input type="text" id="portImage" placeholder="images/photo.jpg or https://example.com/photo.jpg">
+                    <label>Image URL <span class="required">*</span></label>
+                    <input type="text" id="portImage" placeholder="https://example.com/image.jpg">
                 </div>
                 <div class="form-group">
                     <label>Description</label>
@@ -887,13 +902,462 @@
                 <p><strong>Category:</strong> <span id="viewCategory"></span></p>
                 <p><strong>Description:</strong> <span id="viewDescription"></span></p>
                 <p><strong>ID:</strong> <span id="viewId"></span></p>
-                <p><strong>Path:</strong> <code id="viewPath" style="background:#f0f0f0;padding:2px 8px;border-radius:4px;word-break:break-all;"></code></p>
+                <p><strong>URL:</strong> <code id="viewPath" style="background:#f0f0f0;padding:2px 8px;border-radius:4px;word-break:break-all;"></code></p>
             </div>
             <button class="btn btn-primary" onclick="closeViewModal()" style="width:100%;padding:12px;">Close</button>
         </div>
     </div>
 
     <script src="../js/script.js"></script>
+    <script>
+        // ========================================
+        // ADMIN GALLERY - COMPLETE FIXED
+        // ========================================
+
+        // ========================================
+        // RENDER GALLERY
+        // ========================================
+        function renderAdminGallery(container) {
+            var items = DataStore.get('portfolio');
+            if (!container) return;
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-gallery-state">
+                        <i class="fas fa-images"></i>
+                        <h3>No Images in Gallery</h3>
+                        <p>Add your first image using the form above.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            var html = '';
+            items.forEach(function(item, index) {
+                var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
+                html += '<div class="gallery-card">';
+                html += '<div class="image-wrapper">';
+                html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
+                html += '<div class="image-overlay">';
+                html += '<button class="btn-view" onclick="viewImage(' + item.id + ')"><i class="fas fa-eye"></i> View</button>';
+                html += '<button class="btn-edit" onclick="editImage(' + item.id + ')"><i class="fas fa-edit"></i> Edit</button>';
+                html += '<button class="btn-delete" onclick="deleteImage(' + item.id + ')"><i class="fas fa-trash"></i> Delete</button>';
+                html += '</div></div>';
+                html += '<div class="card-body">';
+                html += '<h3 class="card-title">' + (item.title || 'Image ' + (index + 1)) + '</h3>';
+                html += '<span class="card-category">' + (item.category || 'custom') + '</span>';
+                html += '<p class="card-description">' + (item.description || '') + '</p>';
+                html += '</div>';
+                html += '<div class="card-footer">';
+                html += '<span class="image-id">ID: ' + item.id + '</span>';
+                html += '<div class="card-actions">';
+                html += '<button class="btn-edit-sm" onclick="editImage(' + item.id + ')"><i class="fas fa-edit"></i></button>';
+                html += '<button class="btn-delete-sm" onclick="deleteImage(' + item.id + ')"><i class="fas fa-trash"></i></button>';
+                html += '</div></div></div>';
+            });
+            container.innerHTML = html;
+
+            updateStats();
+        }
+
+        // ========================================
+        // UPDATE STATS
+        // ========================================
+        function updateStats() {
+            var items = DataStore.get('portfolio');
+            var count = items ? items.length : 0;
+
+            var totalEl = document.getElementById('totalImages');
+            if (totalEl) totalEl.textContent = count;
+
+            var weddingCount = 0,
+                eventCount = 0,
+                portraitCount = 0;
+            if (items) {
+                items.forEach(function(item) {
+                    if (item.category === 'wedding') weddingCount++;
+                    else if (item.category === 'event') eventCount++;
+                    else if (item.category === 'portrait') portraitCount++;
+                });
+            }
+
+            var weddingEl = document.getElementById('weddingCount');
+            var eventEl = document.getElementById('eventCount');
+            var portraitEl = document.getElementById('portraitCount');
+
+            if (weddingEl) weddingEl.textContent = weddingCount;
+            if (eventEl) eventEl.textContent = eventCount;
+            if (portraitEl) portraitEl.textContent = portraitCount;
+        }
+
+        // ========================================
+        // QUICK ADD IMAGE
+        // ========================================
+        window.quickAddImage = function() {
+            console.log('Quick Add triggered');
+            var urlInput = document.getElementById('quickImageUrl');
+            var titleInput = document.getElementById('quickImageTitle');
+            var categorySelect = document.getElementById('quickCategory');
+            var descriptionInput = document.getElementById('quickDescription');
+
+            if (!urlInput) {
+                showToast('Input field not found.', 'error');
+                return;
+            }
+
+            var url = urlInput.value.trim();
+            var title = titleInput ? titleInput.value.trim() : '';
+            var category = categorySelect ? categorySelect.value : 'custom';
+            var description = descriptionInput ? descriptionInput.value.trim() : '';
+
+            if (!url) {
+                showToast('Please enter an image URL.', 'error');
+                urlInput.focus();
+                return;
+            }
+
+            var portfolio = DataStore.get('portfolio');
+            if (!portfolio) portfolio = [];
+
+            // Check duplicate
+            var exists = false;
+            for (var i = 0; i < portfolio.length; i++) {
+                if (portfolio[i].image === url) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (exists) {
+                showToast('⚠️ This image already exists in the gallery.', 'error');
+                return;
+            }
+
+            var newItem = {
+                id: Date.now() + Math.random() * 1000,
+                title: title || 'My Photo',
+                category: category,
+                image: url,
+                description: description || 'Added manually'
+            };
+            portfolio.push(newItem);
+            DataStore.set('portfolio', portfolio);
+
+            showToast('✅ Photo added successfully!', 'success');
+
+            // Clear inputs
+            urlInput.value = '';
+            if (titleInput) titleInput.value = '';
+            if (descriptionInput) descriptionInput.value = '';
+
+            // Reset preview
+            var preview = document.getElementById('quickPreview');
+            if (preview) {
+                preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL above</small></div>';
+                preview.classList.remove('has-preview');
+            }
+
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+        };
+
+        // ========================================
+        // BULK UPLOAD
+        // ========================================
+        window.handleUrlUpload = function() {
+            console.log('Bulk Upload triggered');
+            var urlInput = document.getElementById('urlInput');
+            if (!urlInput) {
+                showToast('Input field not found.', 'error');
+                return;
+            }
+
+            var urls = urlInput.value.split('\n')
+                .map(function(url) {
+                    return url.trim();
+                })
+                .filter(function(url) {
+                    return url.length > 0;
+                });
+
+            if (urls.length === 0) {
+                showToast('Please paste at least one image URL.', 'error');
+                urlInput.focus();
+                return;
+            }
+
+            var portfolio = DataStore.get('portfolio');
+            if (!portfolio) portfolio = [];
+
+            var addedCount = 0;
+            var skippedCount = 0;
+
+            var existingUrls = {};
+            for (var i = 0; i < portfolio.length; i++) {
+                existingUrls[portfolio[i].image] = true;
+            }
+
+            for (var j = 0; j < urls.length; j++) {
+                var url = urls[j];
+                if (existingUrls[url]) {
+                    skippedCount++;
+                    continue;
+                }
+
+                portfolio.push({
+                    id: Date.now() + j + Math.random() * 1000,
+                    title: 'Image ' + (portfolio.length + addedCount + 1),
+                    category: 'custom',
+                    image: url,
+                    description: 'Added via bulk upload'
+                });
+                addedCount++;
+                existingUrls[url] = true;
+            }
+
+            DataStore.set('portfolio', portfolio);
+
+            var message = '✅ ' + addedCount + ' images added successfully!';
+            if (skippedCount > 0) {
+                message += ' (' + skippedCount + ' skipped - already exist)';
+            }
+            showToast(message, 'success');
+            urlInput.value = '';
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+        };
+
+        // ========================================
+        // VIEW IMAGE
+        // ========================================
+        window.viewImage = function(id) {
+            var items = DataStore.get('portfolio');
+            if (!items) {
+                showToast('Image not found.', 'error');
+                return;
+            }
+
+            var item = null;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].id === id) {
+                    item = items[i];
+                    break;
+                }
+            }
+            if (!item) {
+                showToast('Image not found.', 'error');
+                return;
+            }
+
+            document.getElementById('viewImage').src = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
+            document.getElementById('viewTitleText').textContent = item.title || 'Untitled';
+            document.getElementById('viewCategory').textContent = item.category || 'custom';
+            document.getElementById('viewDescription').textContent = item.description || 'No description';
+            document.getElementById('viewId').textContent = item.id;
+            document.getElementById('viewPath').textContent = item.image || 'No path';
+            document.getElementById('viewTitle').textContent = '📸 ' + (item.title || 'Image Details');
+
+            document.getElementById('viewModal').classList.add('active');
+        };
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.remove('active');
+        }
+
+        // ========================================
+        // EDIT IMAGE
+        // ========================================
+        window.editImage = function(id) {
+            var items = DataStore.get('portfolio');
+            if (!items) {
+                showToast('Image not found.', 'error');
+                return;
+            }
+
+            var item = null;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].id === id) {
+                    item = items[i];
+                    break;
+                }
+            }
+            if (item) {
+                openPortfolioModal(item);
+            } else {
+                showToast('Image not found.', 'error');
+            }
+        };
+
+        // ========================================
+        // DELETE IMAGE
+        // ========================================
+        window.deleteImage = function(id) {
+            if (!confirm('Are you sure you want to delete this image?')) return;
+
+            var portfolio = DataStore.get('portfolio');
+            if (!portfolio) return;
+
+            var newPortfolio = [];
+            for (var i = 0; i < portfolio.length; i++) {
+                if (portfolio[i].id !== id) {
+                    newPortfolio.push(portfolio[i]);
+                }
+            }
+            DataStore.set('portfolio', newPortfolio);
+            showToast('🗑️ Image deleted successfully!', 'success');
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+        };
+
+        // ========================================
+        // CLEAR ALL IMAGES
+        // ========================================
+        window.clearAllImages = function() {
+            var items = DataStore.get('portfolio');
+            var count = items ? items.length : 0;
+
+            if (count === 0) {
+                showToast('No images to clear.', 'info');
+                return;
+            }
+
+            if (!confirm('⚠️ Are you sure you want to delete ALL ' + count + ' images? This cannot be undone!')) return;
+            if (!confirm('Really? All images will be permanently deleted!')) return;
+
+            DataStore.set('portfolio', []);
+            showToast('🗑️ All images cleared!', 'success');
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+        };
+
+        // ========================================
+        // REFRESH GALLERY
+        // ========================================
+        window.refreshGallery = function() {
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+            showToast('🔄 Gallery refreshed!', 'info');
+        };
+
+        // ========================================
+        // OPEN PORTFOLIO MODAL
+        // ========================================
+        function openPortfolioModal(item) {
+            var modal = document.getElementById('portfolioModal');
+            var form = document.getElementById('portfolioForm');
+            var title = document.getElementById('modalTitle');
+            var preview = document.getElementById('modalPreview');
+
+            if (!modal || !form) return;
+
+            title.textContent = item ? '✏️ Edit Image' : '📷 Add New Image';
+            form.reset();
+            document.getElementById('portfolioId').value = item ? item.id : '';
+            document.getElementById('portTitle').value = item ? item.title : '';
+            document.getElementById('portCategory').value = item ? item.category : 'custom';
+            document.getElementById('portImage').value = item ? item.image : '';
+            document.getElementById('portDescription').value = item ? item.description : '';
+
+            if (item && item.image) {
+                preview.innerHTML = '<img src="' + item.image + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'>Image not found</div>\'">';
+            } else {
+                preview.innerHTML = '<div class="no-preview">No image preview</div>';
+            }
+
+            modal.classList.add('active');
+        }
+
+        // ========================================
+        // CLOSE MODAL
+        // ========================================
+        function closeModal() {
+            var modal = document.getElementById('portfolioModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // ========================================
+        // SAVE PORTFOLIO
+        // ========================================
+        function savePortfolio(form) {
+            var id = parseInt(document.getElementById('portfolioId').value);
+            var item = {
+                title: document.getElementById('portTitle').value.trim(),
+                category: document.getElementById('portCategory').value,
+                image: document.getElementById('portImage').value.trim(),
+                description: document.getElementById('portDescription').value.trim()
+            };
+
+            if (!item.title || !item.category || !item.image) {
+                showToast('Please fill in all fields.', 'error');
+                return;
+            }
+
+            var portfolio = DataStore.get('portfolio');
+            if (!portfolio) portfolio = [];
+
+            if (id) {
+                var index = -1;
+                for (var i = 0; i < portfolio.length; i++) {
+                    if (portfolio[i].id === id) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index !== -1) {
+                    portfolio[index] = {
+                        id: portfolio[index].id,
+                        title: item.title,
+                        category: item.category,
+                        image: item.image,
+                        description: item.description
+                    };
+                }
+                showToast('✅ Image updated successfully!', 'success');
+            } else {
+                item.id = Date.now() + Math.random() * 1000;
+                portfolio.push(item);
+                showToast('✅ Image added successfully!', 'success');
+            }
+
+            DataStore.set('portfolio', portfolio);
+            closeModal();
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+        }
+
+        // ========================================
+        // PREVIEW ON INPUT
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            var urlInput = document.getElementById('quickImageUrl');
+            var preview = document.getElementById('quickPreview');
+
+            if (urlInput && preview) {
+                urlInput.addEventListener('input', function() {
+                    var url = this.value.trim();
+                    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                        preview.innerHTML = '<img src="' + url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div style=\'color:#e74c3c;padding:20px;\'><i class=\'fas fa-exclamation-triangle\' style=\'font-size:2rem;display:block;margin-bottom:10px;\'></i><p>Cannot preview image</p><small>' + url + '</small></div>\'">';
+                        preview.classList.add('has-preview');
+                    } else {
+                        preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL above</small></div>';
+                        preview.classList.remove('has-preview');
+                    }
+                });
+            }
+
+            // Initial render
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+
+            console.log('✅ Gallery loaded successfully!');
+        });
+
+        // ========================================
+        // EXPOSE FUNCTIONS
+        // ========================================
+        window.savePortfolio = savePortfolio;
+        window.closeModal = closeModal;
+        window.openPortfolioModal = openPortfolioModal;
+        window.closeViewModal = closeViewModal;
+        window.renderAdminGallery = renderAdminGallery;
+        window.updateStats = updateStats;
+        window.DataStore = DataStore;
+    </script>
 </body>
 
 </html>
