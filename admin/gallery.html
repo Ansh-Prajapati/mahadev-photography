@@ -152,6 +152,13 @@
             background: rgba(255, 255, 255, 0.05);
             box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.08);
         }
+        /* Fix for select dropdown options */
+        
+        .add-image-grid .form-group select option {
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 10px;
+        }
         
         .add-image-grid .form-group textarea {
             resize: vertical;
@@ -695,6 +702,13 @@
             background: rgba(255, 255, 255, 0.02);
             color: #FFFFFF;
             font-family: 'Inter', sans-serif;
+        }
+        /* Fix for modal select dropdown */
+        
+        .modal .form-group select option {
+            background: #1A1A1A;
+            color: #FFFFFF;
+            padding: 10px;
         }
         
         .modal .form-group input:focus,
@@ -1460,7 +1474,7 @@
         }
 
         // ========================================
-        // SAVE PORTFOLIO - FIXED (UPDATE WORKS!)
+        // SAVE PORTFOLIO - COMPLETE FIXED
         // ========================================
         function savePortfolio(form) {
             console.log('Saving portfolio item...');
@@ -1471,7 +1485,7 @@
             var image = document.getElementById('portImage').value.trim();
             var description = document.getElementById('portDescription').value.trim();
 
-            console.log('ID:', id, 'Title:', title, 'Category:', category, 'Image:', image);
+            console.log('ID:', id, 'Title:', title, 'Category:', category);
 
             if (!title || !category || !image) {
                 showToast('Please fill in all fields.', 'error');
@@ -1481,28 +1495,35 @@
             var portfolio = DataStore.get('portfolio');
             if (!portfolio) portfolio = [];
 
+            console.log('Current portfolio length:', portfolio.length);
+
             if (id) {
                 // UPDATE - Edit existing
-                var index = -1;
+                var found = false;
                 for (var i = 0; i < portfolio.length; i++) {
                     if (portfolio[i].id === id) {
-                        index = i;
+                        // Preserve the original id and update other fields
+                        portfolio[i] = {
+                            id: portfolio[i].id,
+                            title: title,
+                            category: category,
+                            image: image,
+                            description: description
+                        };
+                        found = true;
+                        console.log('✅ Updated item at index:', i, portfolio[i]);
                         break;
                     }
                 }
-                if (index !== -1) {
-                    portfolio[index] = {
-                        id: portfolio[index].id,
-                        title: title,
-                        category: category,
-                        image: image,
-                        description: description
-                    };
-                    console.log('Updated item at index:', index, portfolio[index]);
+
+                if (found) {
+                    DataStore.set('portfolio', portfolio);
                     showToast('✅ Image updated successfully!', 'success');
+                    closeModal();
+                    renderAdminGallery(document.getElementById('adminGalleryGrid'));
                 } else {
-                    showToast('Image not found in portfolio.', 'error');
-                    return;
+                    showToast('❌ Image not found in portfolio. Please refresh and try again.', 'error');
+                    console.error('Image with ID', id, 'not found in portfolio');
                 }
             } else {
                 // CREATE - Add new
@@ -1514,13 +1535,12 @@
                     description: description
                 };
                 portfolio.push(newItem);
-                console.log('Added new item:', newItem);
+                DataStore.set('portfolio', portfolio);
+                console.log('✅ Added new item:', newItem);
                 showToast('✅ Image added successfully!', 'success');
+                closeModal();
+                renderAdminGallery(document.getElementById('adminGalleryGrid'));
             }
-
-            DataStore.set('portfolio', portfolio);
-            closeModal();
-            renderAdminGallery(document.getElementById('adminGalleryGrid'));
         }
 
         // ========================================
@@ -1572,6 +1592,7 @@
             renderAdminGallery(document.getElementById('adminGalleryGrid'));
 
             console.log('✅ Gallery loaded successfully!');
+            console.log('📸 Total images:', DataStore.get('portfolio').length);
         });
 
         // ========================================
