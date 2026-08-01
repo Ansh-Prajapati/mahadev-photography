@@ -8,9 +8,537 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Mahadev Photography - Capturing Moments, Creating Memories</title>
-    <link rel="stylesheet" href="css/style.css?v=4.0.0" />
+    <link rel="stylesheet" href="css/style.css?v=5.0.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ========================================
+           HOMEPAGE ENHANCED STYLES
+           ======================================== */
+        /* Hero Section - Clean & Modern */
+        
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            overflow: hidden;
+            padding: 100px 0 80px;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 40%, rgba(212, 175, 55, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 70% 60%, rgba(212, 175, 55, 0.03) 0%, transparent 40%);
+            animation: rotateBg 30s linear infinite;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+            padding: 20px;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.12);
+            color: var(--gold);
+            padding: 6px 24px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            margin-bottom: 20px;
+        }
+        
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 15px;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .hero-title .gold-text {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 35px;
+            line-height: 1.8;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .hero-buttons .btn {
+            padding: 14px 36px;
+            font-size: 0.95rem;
+        }
+        /* Stats - Clean Row */
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 60px;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            position: relative;
+        }
+        
+        .stat-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 40px;
+            background: rgba(212, 175, 55, 0.2);
+        }
+        
+        .stat-number {
+            display: block;
+            font-size: 2.8rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        /* Services Section */
+        
+        .services-section {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+        
+        .service-card {
+            background: var(--bg-card);
+            padding: 35px 25px;
+            border-radius: var(--radius);
+            text-align: center;
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gold-gradient);
+            transform: scaleX(0);
+            transition: var(--transition-smooth);
+        }
+        
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(212, 175, 55, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .service-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            background: rgba(212, 175, 55, 0.08);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--gold);
+            transition: var(--transition-smooth);
+        }
+        
+        .service-card:hover .service-icon {
+            background: var(--gold-gradient);
+            color: var(--black);
+            transform: scale(1.05);
+        }
+        
+        .service-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .service-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin: 0;
+        }
+        /* Gallery Preview */
+        
+        .gallery-section {
+            padding: 80px 0;
+            background: var(--bg-primary);
+        }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .gallery-item-preview {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        
+        .gallery-item-preview:hover {
+            transform: scale(1.03);
+            border-color: var(--gold);
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.1);
+        }
+        
+        .gallery-item-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition-smooth);
+        }
+        
+        .gallery-item-preview:hover img {
+            transform: scale(1.05);
+        }
+        
+        .gallery-item-preview .preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 25px 20px 18px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+        
+        .gallery-item-preview:hover .preview-overlay {
+            opacity: 1;
+        }
+        
+        .gallery-item-preview .preview-overlay h4 {
+            color: var(--gold);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+        
+        .gallery-item-preview .preview-overlay p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            margin: 4px 0 0;
+        }
+        /* Google Reviews Section */
+        
+        .reviews-section {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+        }
+        
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+        
+        .review-card {
+            background: var(--bg-card);
+            padding: 28px;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: var(--transition-smooth);
+        }
+        
+        .review-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(212, 175, 55, 0.12);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .reviewer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .reviewer-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--gold-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--black);
+        }
+        
+        .reviewer-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        
+        .review-stars {
+            color: #F4B400;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        
+        .review-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin: 10px 0 14px;
+            font-style: italic;
+        }
+        
+        .review-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .review-verified {
+            color: #34A853;
+        }
+        
+        .review-verified i {
+            margin-right: 4px;
+        }
+        /* CTA Section */
+        
+        .cta-section {
+            padding: 80px 0;
+            background: var(--bg-primary);
+            text-align: center;
+        }
+        
+        .cta-content h2 {
+            font-size: 2.8rem;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 12px;
+        }
+        
+        .cta-content p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+        /* Section Header */
+        
+        .section-header {
+            text-align: center;
+        }
+        
+        .section-header .section-tag {
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--gold);
+            padding: 4px 20px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            margin-bottom: 12px;
+        }
+        
+        .section-header h2 {
+            font-size: 2.6rem;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 10px;
+        }
+        
+        .section-header h2 .gold-text {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+        
+        .text-center {
+            text-align: center;
+            margin-top: 35px;
+        }
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        
+        @media (max-width: 1024px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .reviews-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding: 80px 0 60px;
+                min-height: auto;
+            }
+            .hero-stats {
+                gap: 30px;
+            }
+            .stat-item:not(:last-child)::after {
+                display: none;
+            }
+            .stat-number {
+                font-size: 2.2rem;
+            }
+            .services-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            .service-card {
+                padding: 25px 18px;
+            }
+            .service-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.4rem;
+            }
+            .gallery-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-header h2 {
+                font-size: 2rem;
+            }
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            .hero-buttons .btn {
+                padding: 12px 24px;
+                font-size: 0.85rem;
+            }
+            .cta-content h2 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-stats {
+                gap: 20px;
+            }
+            .stat-number {
+                font-size: 1.8rem;
+            }
+            .stat-label {
+                font-size: 0.7rem;
+            }
+            .hero-title {
+                font-size: 2.2rem;
+            }
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .hero-buttons .btn {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -28,6 +556,7 @@
                 <li><a href="packages.html">Packages</a></li>
                 <li><a href="gallery.html">Gallery</a></li>
                 <li><a href="contact.html">Contact</a></li>
+                <li><a href="admin/login.html" class="admin-btn" style="background:var(--gold-gradient);color:#0A0A0A;padding:8px 22px;border-radius:50px;font-weight:600;">Admin</a></li>
             </ul>
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -41,46 +570,48 @@
     <section class="hero">
         <div class="hero-overlay"></div>
         <div class="hero-content">
+            <span class="hero-badge"><i class="fas fa-camera"></i> Premium Photography</span>
             <h1 class="hero-title">Capturing <span class="gold-text">Moments</span></h1>
             <p class="hero-subtitle">Creating Memories That Last a Lifetime</p>
-            <p class="hero-description">Professional photography services for weddings, engagements, pre-wedding shoots, and baby showers.</p>
+            <p class="hero-description">Professional photography services for weddings, engagements, pre-wedding shoots, and baby showers. Let us tell your story through our lens.</p>
             <div class="hero-buttons">
                 <a href="packages.html" class="btn btn-primary">View Packages</a>
                 <a href="contact.html" class="btn btn-secondary">Book Now</a>
                 <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" class="btn btn-youtube">
-                    <i class="fab fa-youtube"></i> Subscribe
+                    <i class="fab fa-youtube"></i> YouTube
                 </a>
                 <a href="https://www.instagram.com/mahadev_photography1921?igsh=bWc3bTlyOTJ5MmJp" target="_blank" class="btn btn-instagram">
-                    <i class="fab fa-instagram"></i> Follow
+                    <i class="fab fa-instagram"></i> Instagram
                 </a>
             </div>
-        </div>
-        <div class="hero-stats">
-            <div class="stat-item">
-                <span class="stat-number" data-count="500">0</span>
-                <span class="stat-label">Happy Clients</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="1200">0</span>
-                <span class="stat-label">Photos Captured</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="8">0</span>
-                <span class="stat-label">Years Experience</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" data-count="150">0</span>
-                <span class="stat-label">Events Covered</span>
+
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" data-count="500">0</span>
+                    <span class="stat-label">Happy Clients</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="1200">0</span>
+                    <span class="stat-label">Photos Captured</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="8">0</span>
+                    <span class="stat-label">Years Experience</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="150">0</span>
+                    <span class="stat-label">Events Covered</span>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Services -->
-    <section class="services-preview">
+    <!-- Services Section -->
+    <section class="services-section">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">What We Do</span>
-                <h2>Our Photography <span class="gold-text">Services</span></h2>
+                <span class="section-tag"><i class="fas fa-star"></i> What We Do</span>
+                <h2>Our <span class="gold-text">Services</span></h2>
                 <p>From intimate moments to grand celebrations, we capture it all with artistry and precision.</p>
             </div>
             <div class="services-grid">
@@ -109,101 +640,37 @@
     </section>
 
     <!-- Gallery Preview -->
-    <section class="featured-portfolio">
+    <section class="gallery-section">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Our Work</span>
-                <h2>Photo <span class="gold-text">Gallery</span></h2>
+                <span class="section-tag"><i class="fas fa-images"></i> Our Work</span>
+                <h2>Recent <span class="gold-text">Gallery</span></h2>
                 <p>Explore some of our favorite captures that showcase our style and expertise.</p>
             </div>
-            <div class="portfolio-grid" id="galleryPreview"></div>
+            <div class="gallery-grid" id="galleryPreview">
+                <!-- Dynamically loaded -->
+            </div>
             <div class="text-center">
                 <a href="gallery.html" class="btn btn-primary">View Full Gallery</a>
             </div>
         </div>
     </section>
 
-    <!-- Social Section -->
-    <section class="social-section">
+    <!-- Google Reviews Section -->
+    <section class="reviews-section" id="googleReviews">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag"><i class="fas fa-share-alt"></i> Follow Us</span>
-                <h2>Connect With <span class="gold-text">Us</span></h2>
-                <p>Follow us on social media for behind-the-scenes, tutorials, and highlights from our shoots!</p>
-            </div>
-            <div class="social-buttons">
-                <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" class="social-btn youtube-btn">
-                    <i class="fab fa-youtube"></i>
-                    <span>YouTube</span>
-                    <small>Subscribe</small>
-                </a>
-                <a href="https://www.instagram.com/mahadev_photography1921?igsh=bWc3bTlyOTJ5MmJp" target="_blank" class="social-btn instagram-btn">
-                    <i class="fab fa-instagram"></i>
-                    <span>Instagram</span>
-                    <small>1871 Followers</small>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section class="testimonials">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">Testimonials</span>
+                <span class="section-tag"><i class="fab fa-google"></i> Google Reviews</span>
                 <h2>What Our <span class="gold-text">Clients Say</span></h2>
+                <p>Real reviews from our Google Business Profile</p>
             </div>
-            <div class="testimonial-grid">
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p>"Mahadev Photography captured our wedding day perfectly. Every moment, every emotion - it's all there. We couldn't be happier!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">RK</div>
-                        <div>
-                            <h4>Rahul & Kavya</h4>
-                            <span>Wedding Clients</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p>"Amazing work! The team was professional, creative, and made everyone feel comfortable. The photos exceeded our expectations."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">PM</div>
-                        <div>
-                            <h4>Priya Mehta</h4>
-                            <span>Engagement Session</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p>"The pre-wedding shoot was incredible! The photographer knew exactly how to capture our chemistry. Highly recommend!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">AS</div>
-                        <div>
-                            <h4>Ananya & Suresh</h4>
-                            <span>Pre Wedding Clients</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="reviews-grid" id="reviewsContainer">
+                <!-- Reviews will be loaded dynamically or inserted here -->
             </div>
         </div>
     </section>
 
-    <!-- CTA -->
+    <!-- CTA Section -->
     <section class="cta-section">
         <div class="container">
             <div class="cta-content">
@@ -222,16 +689,16 @@
                     <h3><i class="fas fa-camera"></i> Mahadev Photography</h3>
                     <p>Capturing moments, creating memories that last a lifetime.</p>
                     <div class="social-links">
-                        <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" title="YouTube" class="youtube-link">
+                        <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" title="YouTube" style="background:#FF0000;">
                             <i class="fab fa-youtube"></i>
                         </a>
-                        <a href="https://www.instagram.com/mahadev_photography1921?igsh=bWc3bTlyOTJ5MmJp" target="_blank" title="Instagram" class="instagram-link">
+                        <a href="https://www.instagram.com/mahadev_photography1921?igsh=bWc3bTlyOTJ5MmJp" target="_blank" title="Instagram" style="background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" target="_blank" title="Facebook">
+                        <a href="#" target="_blank" title="Facebook" style="background:#1877F2;">
                             <i class="fab fa-facebook"></i>
                         </a>
-                        <a href="#" target="_blank" title="Pinterest">
+                        <a href="#" target="_blank" title="Pinterest" style="background:#E60023;">
                             <i class="fab fa-pinterest"></i>
                         </a>
                     </div>
@@ -270,7 +737,35 @@
         </div>
     </footer>
 
-    <script src="js/script.js?v=4.0.0"></script>
+    <script src="js/script.js?v=5.0.0"></script>
+    <script>
+        // ========================================
+        // LOAD GALLERY PREVIEW
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            var container = document.getElementById('galleryPreview');
+            if (!container) return;
+
+            var items = DataStore.get('portfolio').slice(0, 4);
+
+            if (items.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#666;">No images yet. Add some in the admin panel!</div>';
+                return;
+            }
+
+            var html = '';
+            items.forEach(function(item) {
+                var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
+                html += '<div class="gallery-item-preview">';
+                html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/400x300/eee/999?text=Image+Not+Found\'">';
+                html += '<div class="preview-overlay">';
+                html += '<h4>' + item.title + '</h4>';
+                html += '<p>' + (item.description || '') + '</p>';
+                html += '</div></div>';
+            });
+            container.innerHTML = html;
+        });
+    </script>
 </body>
 
 </html>
