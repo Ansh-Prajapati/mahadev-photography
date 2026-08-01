@@ -948,15 +948,22 @@
                     <div class="stat-box">
                         <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
                         <div class="stat-info">
-                            <h3 id="eventCount">0</h3>
-                            <p>Events</p>
+                            <h3 id="engagementCount">0</h3>
+                            <p>Engagement</p>
                         </div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-icon purple"><i class="fas fa-user"></i></div>
+                        <div class="stat-icon purple"><i class="fas fa-heart"></i></div>
                         <div class="stat-info">
-                            <h3 id="portraitCount">0</h3>
-                            <p>Portraits</p>
+                            <h3 id="preweddingCount">0</h3>
+                            <p>Pre Wedding</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon pink"><i class="fas fa-baby"></i></div>
+                        <div class="stat-info">
+                            <h3 id="babyshowerCount">0</h3>
+                            <p>Baby Shower</p>
                         </div>
                     </div>
                 </div>
@@ -981,9 +988,9 @@
                                 <select id="quickCategory">
                                     <option value="custom">Custom</option>
                                     <option value="wedding">Wedding</option>
-                                    <option value="event">Event</option>
-                                    <option value="portrait">Portrait</option>
-                                    <option value="nature">Nature</option>
+                                    <option value="engagement">Engagement</option>
+                                    <option value="prewedding">Pre Wedding</option>
+                                    <option value="babyshower">Baby Shower</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1053,9 +1060,9 @@
                     <select id="portCategory">
                         <option value="custom">Custom</option>
                         <option value="wedding">Wedding</option>
-                        <option value="event">Event</option>
-                        <option value="portrait">Portrait</option>
-                        <option value="nature">Nature</option>
+                        <option value="engagement">Engagement</option>
+                        <option value="prewedding">Pre Wedding</option>
+                        <option value="babyshower">Baby Shower</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1163,23 +1170,27 @@
             if (totalEl) totalEl.textContent = count;
 
             var weddingCount = 0,
-                eventCount = 0,
-                portraitCount = 0;
+                engagementCount = 0,
+                preweddingCount = 0,
+                babyshowerCount = 0;
             if (items) {
                 items.forEach(function(item) {
                     if (item.category === 'wedding') weddingCount++;
-                    else if (item.category === 'event') eventCount++;
-                    else if (item.category === 'portrait') portraitCount++;
+                    else if (item.category === 'engagement') engagementCount++;
+                    else if (item.category === 'prewedding') preweddingCount++;
+                    else if (item.category === 'babyshower') babyshowerCount++;
                 });
             }
 
             var weddingEl = document.getElementById('weddingCount');
-            var eventEl = document.getElementById('eventCount');
-            var portraitEl = document.getElementById('portraitCount');
+            var engagementEl = document.getElementById('engagementCount');
+            var preweddingEl = document.getElementById('preweddingCount');
+            var babyshowerEl = document.getElementById('babyshowerCount');
 
             if (weddingEl) weddingEl.textContent = weddingCount;
-            if (eventEl) eventEl.textContent = eventCount;
-            if (portraitEl) portraitEl.textContent = portraitCount;
+            if (engagementEl) engagementEl.textContent = engagementCount;
+            if (preweddingEl) preweddingEl.textContent = preweddingCount;
+            if (babyshowerEl) babyshowerEl.textContent = babyshowerCount;
         }
 
         // ========================================
