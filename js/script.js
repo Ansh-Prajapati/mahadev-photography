@@ -1,9 +1,9 @@
 // ========================================
 // MAHADEV PHOTOGRAPHY - COMPLETE
-// VERSION: 3.0.1
+// VERSION: 3.0.2 (FIXED NaN ISSUE)
 // ========================================
 
-const APP_VERSION = '3.0.1';
+const APP_VERSION = '3.0.2';
 
 // ========================================
 // FORCE CLEAR ON VERSION CHANGE
@@ -94,12 +94,17 @@ const DataStore = {
 window.DataStore = DataStore;
 
 // ========================================
-// INITIAL DATA - ORIGINAL CATEGORIES
+// VALIDATE AND FIX DATA (NEW - FIXES NaN)
 // ========================================
 
-function initializeData() {
-    if (!localStorage.getItem('portfolio')) {
-        var portfolio = [{
+function validateAndFixData() {
+    console.log('🔧 Validating data for NaN fixes...');
+
+    // Fix Portfolio
+    var portfolio = DataStore.get('portfolio');
+    if (!Array.isArray(portfolio) || portfolio.length === 0) {
+        console.log('📸 Initializing portfolio with sample data...');
+        portfolio = [{
                 id: 1,
                 title: 'Beautiful Wedding',
                 category: 'wedding',
@@ -108,31 +113,34 @@ function initializeData() {
             },
             {
                 id: 2,
-                title: 'Corporate Event',
-                category: 'event',
-                image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
-                description: 'Professional event coverage'
+                title: 'Romantic Engagement',
+                category: 'engagement',
+                image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=400&fit=crop',
+                description: 'Beautiful engagement shoot'
             },
             {
                 id: 3,
-                title: 'Portrait Session',
-                category: 'portrait',
-                image: 'https://images.unsplash.com/photo-1499952127939-9bbf5af6c51c?w=600&h=400&fit=crop',
-                description: 'Capturing personality'
+                title: 'Pre Wedding Shoot',
+                category: 'prewedding',
+                image: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=600&h=400&fit=crop',
+                description: 'Pre wedding couple session'
             },
             {
                 id: 4,
-                title: 'Nature Landscape',
-                category: 'nature',
-                image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=400&fit=crop',
-                description: 'Breathtaking landscapes'
+                title: 'Baby Shower Celebration',
+                category: 'babyshower',
+                image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&h=400&fit=crop',
+                description: 'Baby shower party'
             }
         ];
         DataStore.set('portfolio', portfolio);
     }
 
-    if (!localStorage.getItem('packages')) {
-        var packages = [{
+    // Fix Packages - CRITICAL for NaN fix
+    var packages = DataStore.get('packages');
+    if (!Array.isArray(packages) || packages.length === 0) {
+        console.log('📦 Initializing packages with sample data...');
+        packages = [{
                 id: 1,
                 name: 'Silver',
                 price: 14999,
@@ -155,11 +163,42 @@ function initializeData() {
             }
         ];
         DataStore.set('packages', packages);
+    } else {
+        // CRITICAL FIX: Validate each package has a valid price
+        var needsUpdate = false;
+        packages.forEach(function(pkg, index) {
+            if (typeof pkg.price !== 'number' || isNaN(pkg.price) || pkg.price === undefined) {
+                console.warn('⚠️ Fixing invalid price for package:', pkg.name);
+                packages[index].price = 0;
+                needsUpdate = true;
+            }
+        });
+        if (needsUpdate) {
+            DataStore.set('packages', packages);
+        }
     }
 
-    if (!localStorage.getItem('submissions')) {
-        DataStore.set('submissions', []);
+    // Fix Submissions
+    var submissions = DataStore.get('submissions');
+    if (!Array.isArray(submissions)) {
+        console.log('📩 Initializing submissions...');
+        submissions = [];
+        DataStore.set('submissions', submissions);
     }
+
+    console.log('✅ Data validation complete!');
+    console.log('📸 Portfolio:', portfolio.length, 'items');
+    console.log('📦 Packages:', packages.length, 'items');
+    console.log('📩 Submissions:', submissions.length, 'items');
+}
+
+// ========================================
+// INITIAL DATA - ORIGINAL CATEGORIES
+// ========================================
+
+function initializeData() {
+    // Use the new validation function instead of the old one
+    validateAndFixData();
 }
 
 // ========================================
@@ -483,16 +522,20 @@ function loadPackages() {
     var html = '';
     items.forEach(function(pkg) {
         var featuredClass = pkg.featured ? 'featured' : '';
+        // SAFETY CHECK: Ensure price is a valid number
+        var price = typeof pkg.price === 'number' ? pkg.price : 0;
         html += '<div class="package-card ' + featuredClass + '">';
         html += '<div class="package-header">';
         html += '<h3>' + pkg.name + '</h3>';
-        html += '<div class="package-price">₹' + pkg.price.toLocaleString() + ' <span>/ session</span></div>';
+        html += '<div class="package-price">₹' + price.toLocaleString() + ' <span>/ session</span></div>';
         html += '</div>';
         html += '<div class="package-body">';
         html += '<ul>';
-        pkg.features.forEach(function(f) {
-            html += '<li><i class="fas fa-check"></i> ' + f + '</li>';
-        });
+        if (Array.isArray(pkg.features)) {
+            pkg.features.forEach(function(f) {
+                html += '<li><i class="fas fa-check"></i> ' + f + '</li>';
+            });
+        }
         html += '</ul>';
         html += '<a href="contact.html" class="btn btn-primary">Book Now</a>';
         html += '</div></div>';
@@ -623,6 +666,9 @@ function initAdminPanel() {
             return;
         }
 
+        // CRITICAL FIX: Validate data before loading admin pages
+        validateAndFixData();
+
         if (currentPage.indexOf('admin/index.html') !== -1 || currentPage.endsWith('/admin/')) {
             initAdminDashboard();
         } else if (currentPage.indexOf('admin/packages.html') !== -1) {
@@ -670,7 +716,7 @@ function initAdminLogin() {
 }
 
 // ========================================
-// ADMIN DASHBOARD
+// ADMIN DASHBOARD - FIXED NaN
 // ========================================
 
 function initAdminDashboard() {
@@ -688,7 +734,8 @@ function initAdminDashboard() {
         var totalRevenue = 0;
         if (Array.isArray(packages)) {
             packages.forEach(function(pkg) {
-                var price = parseFloat(pkg.price) || 0;
+                // CRITICAL FIX: Safely parse price to avoid NaN
+                var price = typeof pkg.price === 'number' ? pkg.price : parseFloat(pkg.price) || 0;
                 totalRevenue += price;
             });
         }
@@ -788,10 +835,12 @@ function renderPackagesTable(table) {
 
     var html = '';
     items.forEach(function(pkg) {
+        // SAFETY CHECK: Ensure price is a valid number
+        var price = typeof pkg.price === 'number' ? pkg.price : 0;
         html += '<tr>';
         html += '<td><strong>' + pkg.name + '</strong></td>';
-        html += '<td>₹' + pkg.price.toLocaleString() + '</td>';
-        html += '<td>' + pkg.features.length + ' features</td>';
+        html += '<td>₹' + price.toLocaleString() + '</td>';
+        html += '<td>' + (Array.isArray(pkg.features) ? pkg.features.length : 0) + ' features</td>';
         html += '<td>' + (pkg.featured ? '⭐ Yes' : 'No') + '</td>';
         html += '<td><div class="actions">';
         html += '<button class="btn-sm btn-edit" onclick="editPackage(' + pkg.id + ')"><i class="fas fa-edit"></i> Edit</button>';
@@ -813,7 +862,7 @@ function openPackageModal(pkg) {
     document.getElementById('packageId').value = pkg ? pkg.id : '';
     document.getElementById('pkgName').value = pkg ? pkg.name : '';
     document.getElementById('pkgPrice').value = pkg ? pkg.price : '';
-    document.getElementById('pkgFeatures').value = pkg ? pkg.features.join('\n') : '';
+    document.getElementById('pkgFeatures').value = pkg ? (Array.isArray(pkg.features) ? pkg.features.join('\n') : '') : '';
     document.getElementById('pkgFeatured').checked = pkg ? pkg.featured : false;
 
     modal.classList.add('active');
@@ -830,15 +879,15 @@ function savePackage(form) {
     var id = parseInt(document.getElementById('packageId').value);
     var pkg = {
         name: document.getElementById('pkgName').value.trim(),
-        price: parseInt(document.getElementById('pkgPrice').value),
+        price: parseInt(document.getElementById('pkgPrice').value) || 0,
         features: document.getElementById('pkgFeatures').value.split('\n').filter(function(f) {
             return f.trim();
         }),
         featured: document.getElementById('pkgFeatured').checked
     };
 
-    if (!pkg.name || !pkg.price || pkg.features.length === 0) {
-        showToast('Please fill in all fields.', 'error');
+    if (!pkg.name || pkg.price <= 0 || pkg.features.length === 0) {
+        showToast('Please fill in all fields correctly.', 'error');
         return;
     }
 
@@ -1661,6 +1710,7 @@ window.handleUrlUpload = handleUrlUpload;
 window.refreshGallery = refreshGallery;
 window.clearAllImages = clearAllImages;
 window.initAdminDashboard = initAdminDashboard;
+window.validateAndFixData = validateAndFixData;
 
 console.log('📱 Mahadev Photography v' + APP_VERSION + ' loaded!');
 console.log('📸 Admin Login: admin@mahadevphotography.com / admin123');
