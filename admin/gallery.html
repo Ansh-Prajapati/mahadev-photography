@@ -1364,7 +1364,8 @@
 
             var item = null;
             for (var i = 0; i < items.length; i++) {
-                if (items[i].id === id) {
+                // IMPORTANT: Compare as STRING because IDs are stored as strings
+                if (String(items[i].id) === String(id)) {
                     item = items[i];
                     break;
                 }
@@ -1372,7 +1373,10 @@
             if (item) {
                 openPortfolioModal(item);
             } else {
-                showToast('Image not found.', 'error');
+                showToast('Image not found with ID: ' + id, 'error');
+                console.log('Available IDs:', items.map(function(x) {
+                    return x.id;
+                }));
             }
         };
 
@@ -1387,7 +1391,7 @@
 
             var newPortfolio = [];
             for (var i = 0; i < portfolio.length; i++) {
-                if (portfolio[i].id !== id) {
+                if (String(portfolio[i].id) !== String(id)) {
                     newPortfolio.push(portfolio[i]);
                 }
             }
@@ -1473,7 +1477,7 @@
         function savePortfolio(form) {
             console.log('Saving portfolio item...');
 
-            var id = parseInt(document.getElementById('portfolioId').value);
+            var id = document.getElementById('portfolioId').value;
             var title = document.getElementById('portTitle').value.trim();
             var category = document.getElementById('portCategory').value;
             var image = document.getElementById('portImage').value.trim();
@@ -1495,14 +1499,14 @@
                 // UPDATE - Edit existing
                 var found = false;
                 for (var i = 0; i < portfolio.length; i++) {
-                    if (portfolio[i].id === id) {
-                        // Preserve the original id and update other fields
+                    // IMPORTANT: Compare as STRING
+                    if (String(portfolio[i].id) === String(id)) {
                         portfolio[i] = {
                             id: portfolio[i].id,
                             title: title,
                             category: category,
                             image: image,
-                            description: description || '' // Fix: Save description properly
+                            description: description || ''
                         };
                         found = true;
                         console.log('✅ Updated item at index:', i, portfolio[i]);
@@ -1518,6 +1522,9 @@
                 } else {
                     showToast('❌ Image not found in portfolio. Please refresh and try again.', 'error');
                     console.error('Image with ID', id, 'not found in portfolio');
+                    console.log('Available IDs:', portfolio.map(function(x) {
+                        return x.id;
+                    }));
                 }
             } else {
                 // CREATE - Add new
@@ -1526,7 +1533,7 @@
                     title: title,
                     category: category,
                     image: image,
-                    description: description || '' // Fix: Save description properly
+                    description: description || ''
                 };
                 portfolio.push(newItem);
                 DataStore.set('portfolio', portfolio);
@@ -1586,7 +1593,13 @@
             renderAdminGallery(document.getElementById('adminGalleryGrid'));
 
             console.log('✅ Gallery loaded successfully!');
-            console.log('📸 Total images:', DataStore.get('portfolio').length);
+            var items = DataStore.get('portfolio');
+            console.log('📸 Total images:', items ? items.length : 0);
+            if (items && items.length > 0) {
+                console.log('📸 Sample image IDs:', items.slice(0, 3).map(function(x) {
+                    return x.id;
+                }));
+            }
         });
 
         // ========================================
