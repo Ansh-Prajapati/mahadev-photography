@@ -1,9 +1,9 @@
 // ========================================
 // MAHADEV PHOTOGRAPHY - COMPLETE
-// VERSION: 4.0.0
+// VERSION: 3.0.1
 // ========================================
 
-const APP_VERSION = '4.0.0';
+const APP_VERSION = '3.0.1';
 
 // ========================================
 // FORCE CLEAR ON VERSION CHANGE
@@ -94,7 +94,7 @@ const DataStore = {
 window.DataStore = DataStore;
 
 // ========================================
-// INITIAL DATA - UPDATED CATEGORIES
+// INITIAL DATA - ORIGINAL CATEGORIES
 // ========================================
 
 function initializeData() {
@@ -108,24 +108,24 @@ function initializeData() {
             },
             {
                 id: 2,
-                title: 'Engagement Ceremony',
-                category: 'engagement',
-                image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop',
-                description: 'Beautiful engagement moments'
+                title: 'Corporate Event',
+                category: 'event',
+                image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
+                description: 'Professional event coverage'
             },
             {
                 id: 3,
-                title: 'Pre Wedding Shoot',
-                category: 'prewedding',
-                image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=400&fit=crop',
-                description: 'Romantic pre-wedding sessions'
+                title: 'Portrait Session',
+                category: 'portrait',
+                image: 'https://images.unsplash.com/photo-1499952127939-9bbf5af6c51c?w=600&h=400&fit=crop',
+                description: 'Capturing personality'
             },
             {
                 id: 4,
-                title: 'Baby Shower Celebration',
-                category: 'babyshower',
-                image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&h=400&fit=crop',
-                description: 'Joyful baby shower moments'
+                title: 'Nature Landscape',
+                category: 'nature',
+                image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=400&fit=crop',
+                description: 'Breathtaking landscapes'
             }
         ];
         DataStore.set('portfolio', portfolio);
@@ -426,8 +426,7 @@ function loadGalleryPreview() {
     var html = '';
     items.forEach(function(item) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-        var categoryClass = 'category-' + (item.category || 'custom');
-        html += '<div class="portfolio-item ' + categoryClass + '" data-category="' + item.category + '">';
+        html += '<div class="portfolio-item" data-category="' + item.category + '">';
         html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/400x300/eee/999?text=Image+Not+Found\';">';
         html += '<div class="portfolio-overlay">';
         html += '<h3>' + item.title + '</h3>';
@@ -450,8 +449,7 @@ function loadGalleryPage() {
     var html = '';
     items.forEach(function(item) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-        var categoryClass = 'category-' + (item.category || 'custom');
-        html += '<div class="gallery-item ' + categoryClass + '" data-id="' + item.id + '">';
+        html += '<div class="gallery-item" data-id="' + item.id + '">';
         html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/400x300/eee/999?text=Image+Not+Found\';">';
         html += '<div class="gallery-overlay">';
         html += '<h3>' + item.title + '</h3>';
@@ -1017,7 +1015,7 @@ window.deleteSubmission = function(id) {
 };
 
 // ========================================
-// ADMIN GALLERY
+// ADMIN GALLERY - COMPLETE WORKING
 // ========================================
 
 function initAdminGallery() {
@@ -1118,9 +1116,8 @@ function renderAdminGallery(container) {
     items.forEach(function(item, index) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
         var displayDescription = item.description || '';
-        var categoryClass = 'category-' + (item.category || 'custom');
 
-        html += '<div class="gallery-card ' + categoryClass + '">';
+        html += '<div class="gallery-card">';
         html += '<div class="image-wrapper">';
         html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
         html += '<div class="image-overlay">';
@@ -1146,7 +1143,7 @@ function renderAdminGallery(container) {
 }
 
 // ========================================
-// UPDATE STATS - NEW CATEGORIES
+// UPDATE STATS - ORIGINAL CATEGORIES
 // ========================================
 
 function updateStats() {
@@ -1157,27 +1154,27 @@ function updateStats() {
     if (totalEl) totalEl.textContent = count;
 
     var weddingCount = 0,
-        engagementCount = 0,
-        preweddingCount = 0,
-        babyshowerCount = 0;
+        eventCount = 0,
+        portraitCount = 0,
+        natureCount = 0;
     if (items) {
         items.forEach(function(item) {
             if (item.category === 'wedding') weddingCount++;
-            else if (item.category === 'engagement') engagementCount++;
-            else if (item.category === 'prewedding') preweddingCount++;
-            else if (item.category === 'babyshower') babyshowerCount++;
+            else if (item.category === 'event') eventCount++;
+            else if (item.category === 'portrait') portraitCount++;
+            else if (item.category === 'nature') natureCount++;
         });
     }
 
     var weddingEl = document.getElementById('weddingCount');
-    var engagementEl = document.getElementById('engagementCount');
-    var preweddingEl = document.getElementById('preweddingCount');
-    var babyshowerEl = document.getElementById('babyshowerCount');
+    var eventEl = document.getElementById('eventCount');
+    var portraitEl = document.getElementById('portraitCount');
+    var natureEl = document.getElementById('natureCount');
 
     if (weddingEl) weddingEl.textContent = weddingCount;
-    if (engagementEl) engagementEl.textContent = engagementCount;
-    if (preweddingEl) preweddingEl.textContent = preweddingCount;
-    if (babyshowerEl) babyshowerEl.textContent = babyshowerCount;
+    if (eventEl) eventEl.textContent = eventCount;
+    if (portraitEl) portraitEl.textContent = portraitCount;
+    if (natureEl) natureEl.textContent = natureCount;
 }
 
 // ========================================

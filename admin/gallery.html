@@ -58,21 +58,16 @@
             background: #3498db;
         }
         
-        .stat-box .stat-icon.gold {
-            background: #D4AF37;
-            color: #0A0A0A;
+        .stat-box .stat-icon.green {
+            background: #2ecc71;
         }
         
-        .stat-box .stat-icon.red {
-            background: #e74c3c;
+        .stat-box .stat-icon.orange {
+            background: #f39c12;
         }
         
         .stat-box .stat-icon.purple {
             background: #9b59b6;
-        }
-        
-        .stat-box .stat-icon.pink {
-            background: #e91e63;
         }
         
         .stat-box .stat-info h3 {
@@ -944,31 +939,24 @@
                         </div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-icon gold"><i class="fas fa-ring"></i></div>
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
                         <div class="stat-info">
                             <h3 id="weddingCount">0</h3>
                             <p>Wedding</p>
                         </div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-icon red"><i class="fas fa-heart"></i></div>
+                        <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
                         <div class="stat-info">
-                            <h3 id="engagementCount">0</h3>
-                            <p>Engagement</p>
+                            <h3 id="eventCount">0</h3>
+                            <p>Events</p>
                         </div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-icon purple"><i class="fas fa-camera"></i></div>
+                        <div class="stat-icon purple"><i class="fas fa-user"></i></div>
                         <div class="stat-info">
-                            <h3 id="preweddingCount">0</h3>
-                            <p>Pre Wedding</p>
-                        </div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-icon pink"><i class="fas fa-baby"></i></div>
-                        <div class="stat-info">
-                            <h3 id="babyshowerCount">0</h3>
-                            <p>Baby Shower</p>
+                            <h3 id="portraitCount">0</h3>
+                            <p>Portraits</p>
                         </div>
                     </div>
                 </div>
@@ -991,11 +979,11 @@
                             <div class="form-group">
                                 <label>Category</label>
                                 <select id="quickCategory">
-                                    <option value="custom">Select Category</option>
+                                    <option value="custom">Custom</option>
                                     <option value="wedding">Wedding</option>
-                                    <option value="engagement">Engagement</option>
-                                    <option value="prewedding">Pre Wedding</option>
-                                    <option value="babyshower">Baby Shower</option>
+                                    <option value="event">Event</option>
+                                    <option value="portrait">Portrait</option>
+                                    <option value="nature">Nature</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1063,11 +1051,11 @@
                 <div class="form-group">
                     <label>Category <span class="required">*</span></label>
                     <select id="portCategory">
-                        <option value="custom">Select Category</option>
+                        <option value="custom">Custom</option>
                         <option value="wedding">Wedding</option>
-                        <option value="engagement">Engagement</option>
-                        <option value="prewedding">Pre Wedding</option>
-                        <option value="babyshower">Baby Shower</option>
+                        <option value="event">Event</option>
+                        <option value="portrait">Portrait</option>
+                        <option value="nature">Nature</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1139,9 +1127,7 @@
             items.forEach(function(item, index) {
                 var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
                 var displayDescription = item.description || '';
-                var categoryClass = 'category-' + (item.category || 'custom');
-
-                html += '<div class="gallery-card ' + categoryClass + '">';
+                html += '<div class="gallery-card">';
                 html += '<div class="image-wrapper">';
                 html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
                 html += '<div class="image-overlay">';
@@ -1167,7 +1153,7 @@
         }
 
         // ========================================
-        // UPDATE STATS - NEW CATEGORIES
+        // UPDATE STATS
         // ========================================
         function updateStats() {
             var items = DataStore.get('portfolio');
@@ -1177,27 +1163,23 @@
             if (totalEl) totalEl.textContent = count;
 
             var weddingCount = 0,
-                engagementCount = 0,
-                preweddingCount = 0,
-                babyshowerCount = 0;
+                eventCount = 0,
+                portraitCount = 0;
             if (items) {
                 items.forEach(function(item) {
                     if (item.category === 'wedding') weddingCount++;
-                    else if (item.category === 'engagement') engagementCount++;
-                    else if (item.category === 'prewedding') preweddingCount++;
-                    else if (item.category === 'babyshower') babyshowerCount++;
+                    else if (item.category === 'event') eventCount++;
+                    else if (item.category === 'portrait') portraitCount++;
                 });
             }
 
             var weddingEl = document.getElementById('weddingCount');
-            var engagementEl = document.getElementById('engagementCount');
-            var preweddingEl = document.getElementById('preweddingCount');
-            var babyshowerEl = document.getElementById('babyshowerCount');
+            var eventEl = document.getElementById('eventCount');
+            var portraitEl = document.getElementById('portraitCount');
 
             if (weddingEl) weddingEl.textContent = weddingCount;
-            if (engagementEl) engagementEl.textContent = engagementCount;
-            if (preweddingEl) preweddingEl.textContent = preweddingCount;
-            if (babyshowerEl) babyshowerEl.textContent = babyshowerCount;
+            if (eventEl) eventEl.textContent = eventCount;
+            if (portraitEl) portraitEl.textContent = portraitCount;
         }
 
         // ========================================
@@ -1382,6 +1364,7 @@
 
             var item = null;
             for (var i = 0; i < items.length; i++) {
+                // IMPORTANT: Compare as STRING because IDs are stored as strings
                 if (String(items[i].id) === String(id)) {
                     item = items[i];
                     break;
@@ -1391,6 +1374,9 @@
                 openPortfolioModal(item);
             } else {
                 showToast('Image not found with ID: ' + id, 'error');
+                console.log('Available IDs:', items.map(function(x) {
+                    return x.id;
+                }));
             }
         };
 
@@ -1486,7 +1472,7 @@
         }
 
         // ========================================
-        // SAVE PORTFOLIO
+        // SAVE PORTFOLIO - COMPLETE FIXED
         // ========================================
         function savePortfolio(form) {
             console.log('Saving portfolio item...');
@@ -1507,9 +1493,13 @@
             var portfolio = DataStore.get('portfolio');
             if (!portfolio) portfolio = [];
 
+            console.log('Current portfolio length:', portfolio.length);
+
             if (id) {
+                // UPDATE - Edit existing
                 var found = false;
                 for (var i = 0; i < portfolio.length; i++) {
+                    // IMPORTANT: Compare as STRING
                     if (String(portfolio[i].id) === String(id)) {
                         portfolio[i] = {
                             id: portfolio[i].id,
@@ -1531,8 +1521,13 @@
                     renderAdminGallery(document.getElementById('adminGalleryGrid'));
                 } else {
                     showToast('❌ Image not found in portfolio. Please refresh and try again.', 'error');
+                    console.error('Image with ID', id, 'not found in portfolio');
+                    console.log('Available IDs:', portfolio.map(function(x) {
+                        return x.id;
+                    }));
                 }
             } else {
+                // CREATE - Add new
                 var newItem = {
                     id: Date.now() + Math.random() * 1000,
                     title: title,
@@ -1598,6 +1593,13 @@
             renderAdminGallery(document.getElementById('adminGalleryGrid'));
 
             console.log('✅ Gallery loaded successfully!');
+            var items = DataStore.get('portfolio');
+            console.log('📸 Total images:', items ? items.length : 0);
+            if (items && items.length > 0) {
+                console.log('📸 Sample image IDs:', items.slice(0, 3).map(function(x) {
+                    return x.id;
+                }));
+            }
         });
 
         // ========================================
