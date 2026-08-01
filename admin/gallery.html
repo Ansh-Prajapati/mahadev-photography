@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         /* ========================================
-           ADMIN GALLERY - ENHANCED STYLES
+           ADMIN GALLERY - BLACK & GOLD
            ======================================== */
         
         .gallery-container {
@@ -152,7 +152,6 @@
             background: rgba(255, 255, 255, 0.05);
             box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.08);
         }
-        /* Fix for select dropdown options */
         
         .add-image-grid .form-group select option {
             background: #1a1a1a;
@@ -220,7 +219,7 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
         }
-        /* Bulk Upload Section */
+        /* Bulk Upload */
         
         .bulk-upload-section {
             background: var(--admin-black-card, #1a1a1a);
@@ -571,7 +570,7 @@
             font-size: 1rem;
         }
         /* ========================================
-           MODAL - ENHANCED BLACK & GOLD
+           MODAL - BLACK & GOLD
            ======================================== */
         
         .modal {
@@ -703,7 +702,6 @@
             color: #FFFFFF;
             font-family: 'Inter', sans-serif;
         }
-        /* Fix for modal select dropdown */
         
         .modal .form-group select option {
             background: #1A1A1A;
@@ -1036,7 +1034,7 @@
     </div>
 
     <!-- ========================================
-    EDIT MODAL - ENHANCED BLACK & GOLD
+    EDIT MODAL - BLACK & GOLD
     ======================================== -->
     <div class="modal" id="portfolioModal">
         <div class="modal-content">
@@ -1079,7 +1077,7 @@
     </div>
 
     <!-- ========================================
-    VIEW MODAL - ENHANCED BLACK & GOLD
+    VIEW MODAL
     ======================================== -->
     <div class="modal" id="viewModal">
         <div class="modal-content view-modal-content">
@@ -1128,6 +1126,7 @@
             var html = '';
             items.forEach(function(item, index) {
                 var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
+                var displayDescription = item.description || '';
                 html += '<div class="gallery-card">';
                 html += '<div class="image-wrapper">';
                 html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
@@ -1139,7 +1138,7 @@
                 html += '<div class="card-body">';
                 html += '<h3 class="card-title">' + (item.title || 'Image ' + (index + 1)) + '</h3>';
                 html += '<span class="card-category">' + (item.category || 'custom') + '</span>';
-                html += '<p class="card-description">' + (item.description || '') + '</p>';
+                html += '<p class="card-description">' + (displayDescription) + '</p>';
                 html += '</div>';
                 html += '<div class="card-footer">';
                 html += '<span class="image-id">ID: ' + item.id + '</span>';
@@ -1230,7 +1229,7 @@
                 title: title || 'My Photo',
                 category: category,
                 image: url,
-                description: description || 'Added manually'
+                description: description || ''
             };
             portfolio.push(newItem);
             DataStore.set('portfolio', portfolio);
@@ -1298,7 +1297,7 @@
                     title: 'Image ' + (portfolio.length + addedCount + 1),
                     category: 'custom',
                     image: url,
-                    description: 'Added via bulk upload'
+                    description: ''
                 });
                 addedCount++;
                 existingUrls[url] = true;
@@ -1340,7 +1339,7 @@
             document.getElementById('viewImage').src = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
             document.getElementById('viewTitleText').textContent = item.title || 'Untitled';
             document.getElementById('viewCategory').textContent = item.category || 'custom';
-            document.getElementById('viewDescription').textContent = item.description || 'No description';
+            document.getElementById('viewDescription').textContent = item.description || '';
             document.getElementById('viewId').textContent = item.id;
             document.getElementById('viewPath').textContent = item.image || 'No path';
             document.getElementById('viewTitle').textContent = '📸 ' + (item.title || 'Image Details');
@@ -1353,7 +1352,7 @@
         }
 
         // ========================================
-        // EDIT IMAGE - FIXED
+        // EDIT IMAGE
         // ========================================
         window.editImage = function(id) {
             console.log('Edit Image triggered for ID:', id);
@@ -1426,7 +1425,7 @@
         };
 
         // ========================================
-        // OPEN PORTFOLIO MODAL - FIXED
+        // OPEN PORTFOLIO MODAL
         // ========================================
         function openPortfolioModal(item) {
             console.log('Opening edit modal for:', item);
@@ -1437,33 +1436,28 @@
 
             if (!modal || !form) return;
 
-            // Set the title
             title.textContent = item ? '✏️ Edit Image' : '📷 Add New Image';
 
-            // Reset form
             form.reset();
 
-            // Populate fields
             document.getElementById('portfolioId').value = item ? item.id : '';
             document.getElementById('portTitle').value = item ? item.title : '';
             document.getElementById('portCategory').value = item ? item.category : 'custom';
             document.getElementById('portImage').value = item ? item.image : '';
             document.getElementById('portDescription').value = item ? item.description : '';
 
-            // Show preview
             if (item && item.image) {
                 preview.innerHTML = '<img src="' + item.image + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'><i class=\\\'fas fa-image\\\'></i> Image not found</div>\'">';
             } else {
                 preview.innerHTML = '<div class="no-preview"><i class="fas fa-image"></i> No image preview</div>';
             }
 
-            // Show modal
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
         // ========================================
-        // CLOSE MODAL - FIXED
+        // CLOSE MODAL
         // ========================================
         function closeModal() {
             var modal = document.getElementById('portfolioModal');
@@ -1485,7 +1479,7 @@
             var image = document.getElementById('portImage').value.trim();
             var description = document.getElementById('portDescription').value.trim();
 
-            console.log('ID:', id, 'Title:', title, 'Category:', category);
+            console.log('ID:', id, 'Title:', title, 'Category:', category, 'Description:', description);
 
             if (!title || !category || !image) {
                 showToast('Please fill in all fields.', 'error');
@@ -1508,7 +1502,7 @@
                             title: title,
                             category: category,
                             image: image,
-                            description: description
+                            description: description || '' // Fix: Save description properly
                         };
                         found = true;
                         console.log('✅ Updated item at index:', i, portfolio[i]);
@@ -1532,7 +1526,7 @@
                     title: title,
                     category: category,
                     image: image,
-                    description: description
+                    description: description || '' // Fix: Save description properly
                 };
                 portfolio.push(newItem);
                 DataStore.set('portfolio', portfolio);
