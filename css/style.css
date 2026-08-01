@@ -3,52 +3,46 @@
    VERSION: 4.0.0
    ======================================== */
 
+
 /* ========================================
    CSS VARIABLES
    ======================================== */
+
 :root {
     /* Primary Colors */
     --gold: #D4AF37;
     --gold-light: #E8C84A;
     --gold-dark: #B8960F;
     --gold-gradient: linear-gradient(135deg, #D4AF37 0%, #F5D76E 50%, #B8960F 100%);
-    
     /* Dark Colors */
     --black: #0A0A0A;
     --black-light: #1A1A1A;
     --black-lighter: #2A2A2A;
     --black-soft: #1E1E1E;
-    
     /* Text Colors */
     --text-primary: #FFFFFF;
     --text-secondary: #B8B8B8;
     --text-muted: #888888;
-    
     /* Accents */
     --accent: #D4AF37;
     --accent-hover: #E8C84A;
     --accent-dark: #B8960F;
-    
     /* Shadows */
     --shadow-gold: 0 10px 40px rgba(212, 175, 55, 0.2);
     --shadow-gold-hover: 0 15px 50px rgba(212, 175, 55, 0.3);
     --shadow-dark: 0 10px 40px rgba(0, 0, 0, 0.5);
     --shadow-glow: 0 0 30px rgba(212, 175, 55, 0.1);
-    
     /* Borders */
     --border-gold: 1px solid rgba(212, 175, 55, 0.3);
     --border-gold-light: 1px solid rgba(212, 175, 55, 0.15);
-    
     /* Transitions */
     --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --transition-gold: all 0.3s ease;
-    
     /* Radius */
     --radius: 16px;
     --radius-sm: 8px;
     --radius-lg: 24px;
     --radius-xl: 32px;
-    
     /* Backgrounds */
     --bg-primary: #0A0A0A;
     --bg-secondary: #1A1A1A;
@@ -56,9 +50,11 @@
     --bg-card-hover: #2A2A2A;
 }
 
+
 /* ========================================
    RESET & BASE
    ======================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -99,7 +95,11 @@ body {
     color: var(--black);
 }
 
-h1, h2, h3, h4, h5 {
+h1,
+h2,
+h3,
+h4,
+h5 {
     font-family: 'Playfair Display', serif;
     color: var(--text-primary);
 }
@@ -110,17 +110,28 @@ h1, h2, h3, h4, h5 {
     padding: 0 20px;
 }
 
+
 /* ========================================
    GOLD GLOW ANIMATIONS
    ======================================== */
+
 @keyframes goldPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
-    50% { box-shadow: 0 0 40px rgba(212, 175, 55, 0.4); }
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
+    }
 }
 
 @keyframes goldShine {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
+    0% {
+        background-position: -200% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
 }
 
 @keyframes fadeInUp {
@@ -135,13 +146,20 @@ h1, h2, h3, h4, h5 {
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
 }
+
 
 /* ========================================
    GOLD TEXT GRADIENT
    ======================================== */
+
 .gold-text {
     background: var(--gold-gradient);
     -webkit-background-clip: text;
@@ -149,9 +167,11 @@ h1, h2, h3, h4, h5 {
     background-clip: text;
 }
 
+
 /* ========================================
    NAVIGATION
    ======================================== */
+
 .navbar {
     position: fixed;
     top: 0;
@@ -282,9 +302,11 @@ h1, h2, h3, h4, h5 {
     background: var(--gold);
 }
 
+
 /* ========================================
    HERO SECTION
    ======================================== */
+
 .hero {
     position: relative;
     height: 100vh;
@@ -303,15 +325,17 @@ h1, h2, h3, h4, h5 {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: 
-        radial-gradient(ellipse at 30% 40%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 60%, rgba(212, 175, 55, 0.05) 0%, transparent 40%);
+    background: radial-gradient(ellipse at 30% 40%, rgba(212, 175, 55, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 70% 60%, rgba(212, 175, 55, 0.05) 0%, transparent 40%);
     animation: rotateBg 30s linear infinite;
 }
 
 @keyframes rotateBg {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .hero::after {
@@ -330,9 +354,7 @@ h1, h2, h3, h4, h5 {
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.06), transparent 60%),
-        radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.03), transparent 50%);
+    background: radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.06), transparent 60%), radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.03), transparent 50%);
 }
 
 .hero-content {
@@ -470,6 +492,93 @@ h1, h2, h3, h4, h5 {
     box-shadow: var(--shadow-gold);
 }
 
+
+/* ========================================
+   INSTAGRAM BUTTON
+   ======================================== */
+
+.btn-instagram {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    color: white;
+    border: none;
+    box-shadow: 0 5px 20px rgba(214, 36, 159, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-instagram:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(214, 36, 159, 0.4);
+    color: white;
+}
+
+
+/* YouTube Button */
+
+.btn-youtube {
+    background: #FF0000;
+    color: white;
+    border: none;
+    box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-youtube:hover {
+    background: #CC0000;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(255, 0, 0, 0.4);
+    color: white;
+}
+
+
+/* ========================================
+   CATEGORY COLORS - NEW
+   ======================================== */
+
+
+/* Wedding - Gold */
+
+.category-wedding {
+    background: rgba(212, 175, 55, 0.2);
+    color: #D4AF37;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+
+/* Engagement - Rose/Red */
+
+.category-engagement {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+
+/* Pre Wedding - Purple */
+
+.category-prewedding {
+    background: rgba(155, 89, 182, 0.2);
+    color: #9b59b6;
+    border: 1px solid rgba(155, 89, 182, 0.3);
+}
+
+
+/* Baby Shower - Blue/Pink */
+
+.category-babyshower {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+
+/* Custom - Default */
+
+.category-custom {
+    background: rgba(255, 255, 255, 0.05);
+    color: #B8B8B8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .hero-stats {
     position: absolute;
     bottom: 80px;
@@ -524,9 +633,11 @@ h1, h2, h3, h4, h5 {
     color: var(--text-secondary);
 }
 
+
 /* ========================================
    SECTION STYLES
    ======================================== */
+
 .section-header {
     text-align: center;
     margin-bottom: 60px;
@@ -567,9 +678,11 @@ h1, h2, h3, h4, h5 {
     line-height: 1.8;
 }
 
+
 /* ========================================
    SERVICES SECTION
    ======================================== */
+
 .services-preview {
     padding: 100px 0;
     background: var(--bg-secondary);
@@ -660,9 +773,11 @@ h1, h2, h3, h4, h5 {
     line-height: 1.7;
 }
 
+
 /* ========================================
    GALLERY PREVIEW
    ======================================== */
+
 .featured-portfolio {
     padding: 100px 0;
     background: var(--bg-primary);
@@ -737,9 +852,11 @@ h1, h2, h3, h4, h5 {
     text-align: center;
 }
 
+
 /* ========================================
    SOCIAL SECTION
    ======================================== */
+
 .social-section {
     padding: 80px 0;
     background: var(--bg-secondary);
@@ -822,9 +939,11 @@ h1, h2, h3, h4, h5 {
     transform: scale(1.2);
 }
 
+
 /* ========================================
    TESTIMONIALS
    ======================================== */
+
 .testimonials {
     padding: 100px 0;
     background: var(--bg-primary);
@@ -907,9 +1026,11 @@ h1, h2, h3, h4, h5 {
     color: var(--text-secondary);
 }
 
+
 /* ========================================
    CTA SECTION
    ======================================== */
+
 .cta-section {
     padding: 100px 0;
     background: var(--bg-secondary);
@@ -961,9 +1082,11 @@ h1, h2, h3, h4, h5 {
     box-shadow: var(--shadow-gold-hover);
 }
 
+
 /* ========================================
    PAGE HEADER
    ======================================== */
+
 .page-header {
     padding: 140px 0 60px;
     background: var(--bg-secondary);
@@ -999,9 +1122,11 @@ h1, h2, h3, h4, h5 {
     color: var(--text-secondary);
 }
 
+
 /* ========================================
    PACKAGES PAGE
    ======================================== */
+
 .packages-page {
     padding: 80px 0;
     background: var(--bg-primary);
@@ -1107,9 +1232,11 @@ h1, h2, h3, h4, h5 {
     text-align: center;
 }
 
+
 /* ========================================
    GALLERY PAGE
    ======================================== */
+
 .gallery-masonry {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1145,9 +1272,17 @@ h1, h2, h3, h4, h5 {
     transform: scale(1.05);
 }
 
-.gallery-masonry .gallery-item:nth-child(1) { grid-row: span 2; }
-.gallery-masonry .gallery-item:nth-child(4) { grid-row: span 1.5; }
-.gallery-masonry .gallery-item:nth-child(7) { grid-row: span 1.8; }
+.gallery-masonry .gallery-item:nth-child(1) {
+    grid-row: span 2;
+}
+
+.gallery-masonry .gallery-item:nth-child(4) {
+    grid-row: span 1.5;
+}
+
+.gallery-masonry .gallery-item:nth-child(7) {
+    grid-row: span 1.8;
+}
 
 .gallery-masonry .gallery-item .gallery-overlay {
     position: absolute;
@@ -1176,9 +1311,11 @@ h1, h2, h3, h4, h5 {
     margin: 5px 0 0;
 }
 
+
 /* ========================================
    LIGHTBOX
    ======================================== */
+
 .lightbox {
     display: none;
     position: fixed;
@@ -1239,9 +1376,11 @@ h1, h2, h3, h4, h5 {
     backdrop-filter: blur(10px);
 }
 
+
 /* ========================================
    CONTACT PAGE
    ======================================== */
+
 .contact-page {
     padding: 80px 0;
     background: var(--bg-primary);
@@ -1322,9 +1461,17 @@ h1, h2, h3, h4, h5 {
     transform: scale(1.2);
 }
 
-.contact-info-card .info-content .social-links-small a.youtube:hover { color: #FF0000; }
-.contact-info-card .info-content .social-links-small a.instagram:hover { color: #E4405F; }
-.contact-info-card .info-content .social-links-small a.facebook:hover { color: #1877F2; }
+.contact-info-card .info-content .social-links-small a.youtube:hover {
+    color: #FF0000;
+}
+
+.contact-info-card .info-content .social-links-small a.instagram:hover {
+    color: #E4405F;
+}
+
+.contact-info-card .info-content .social-links-small a.facebook:hover {
+    color: #1877F2;
+}
 
 .contact-form-side {
     background: var(--bg-card);
@@ -1481,13 +1628,19 @@ h1, h2, h3, h4, h5 {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
+
 
 /* ========================================
    MAP SECTION
    ======================================== */
+
 .map-section {
     padding: 0 0 80px;
     background: var(--bg-primary);
@@ -1532,9 +1685,11 @@ h1, h2, h3, h4, h5 {
     font-size: 1.1rem;
 }
 
+
 /* ========================================
    FOOTER
    ======================================== */
+
 .footer {
     background: var(--black);
     color: var(--text-primary);
@@ -1611,9 +1766,20 @@ h1, h2, h3, h4, h5 {
     border-color: transparent;
 }
 
-.social-links a.youtube:hover { background: #FF0000; color: white; }
-.social-links a.instagram:hover { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; }
-.social-links a.facebook:hover { background: #1877F2; color: white; }
+.social-links a.youtube:hover {
+    background: #FF0000;
+    color: white;
+}
+
+.social-links a.instagram:hover {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    color: white;
+}
+
+.social-links a.facebook:hover {
+    background: #1877F2;
+    color: white;
+}
 
 .footer-col ul {
     list-style: none;
@@ -1655,11 +1821,14 @@ h1, h2, h3, h4, h5 {
     color: var(--text-secondary);
 }
 
+
 /* ========================================
    RESPONSIVE DESIGN
    ======================================== */
 
+
 /* Tablets & Small Laptops */
+
 @media (max-width: 1024px) {
     .contact-wrapper {
         grid-template-columns: 1fr;
@@ -1678,12 +1847,13 @@ h1, h2, h3, h4, h5 {
     }
 }
 
+
 /* Mobile Phones */
+
 @media (max-width: 768px) {
     .hamburger {
         display: flex !important;
     }
-    
     .nav-menu {
         display: none;
         position: fixed;
@@ -1701,12 +1871,10 @@ h1, h2, h3, h4, h5 {
         overflow-y: auto;
         border-left: var(--border-gold-light);
     }
-    
     .nav-menu.active {
         display: flex;
         right: 0;
     }
-    
     .nav-menu a {
         font-size: 1.1rem;
         padding: 15px 0;
@@ -1716,39 +1884,32 @@ h1, h2, h3, h4, h5 {
     .nav-menu a:last-child {
         border-bottom: none;
     }
-    
     .hero {
         height: auto;
         min-height: 100vh;
         padding: 100px 0 120px;
     }
-    
     .hero-title {
         font-size: 2.8rem !important;
     }
-    
     .hero-subtitle {
         font-size: 1.2rem !important;
     }
-    
     .hero-description {
         font-size: 0.95rem;
         padding: 0 10px;
     }
-    
     .hero-buttons {
         flex-direction: column;
         align-items: center;
         gap: 12px;
     }
-    
     .hero-buttons .btn {
         width: 80%;
         text-align: center;
         padding: 14px 20px;
         font-size: 0.95rem;
     }
-    
     .hero-stats {
         position: relative;
         bottom: auto;
@@ -1757,242 +1918,190 @@ h1, h2, h3, h4, h5 {
         flex-wrap: wrap;
         padding: 0 10px;
     }
-    
     .stat-item {
         flex: 1 1 45%;
         min-width: 80px;
     }
-    
     .stat-item::after {
         display: none;
     }
-    
     .stat-number {
         font-size: 2rem !important;
     }
-    
     .stat-label {
         font-size: 0.7rem !important;
     }
-    
     .section-header h2 {
         font-size: 2rem !important;
     }
-    
     .section-header p {
         font-size: 0.9rem;
         padding: 0 10px;
     }
-    
     .section-tag {
         font-size: 0.75rem;
         padding: 4px 16px;
     }
-    
     .services-grid {
         grid-template-columns: 1fr !important;
         gap: 15px;
     }
-    
     .service-card {
         padding: 30px 20px;
     }
-    
     .service-icon {
         width: 60px;
         height: 60px;
         font-size: 1.5rem;
     }
-    
     .service-card h3 {
         font-size: 1.1rem;
     }
-    
     .service-card p {
         font-size: 0.85rem;
     }
-    
     .portfolio-grid {
         grid-template-columns: 1fr 1fr !important;
         gap: 12px;
     }
-    
     .portfolio-item {
         aspect-ratio: 4/3;
     }
-    
     .portfolio-overlay h3 {
         font-size: 0.9rem;
     }
-    
     .portfolio-overlay p {
         font-size: 0.75rem;
     }
-    
     .text-center .btn {
         width: 80%;
         padding: 14px 20px;
         font-size: 0.95rem;
     }
-    
     .social-buttons {
         flex-direction: column;
         align-items: center;
     }
-    
     .social-btn {
         width: 100%;
         max-width: 300px;
     }
-    
     .testimonial-grid {
         grid-template-columns: 1fr !important;
     }
-    
     .testimonial-card {
         padding: 25px;
     }
-    
     .testimonial-card p {
         font-size: 0.9rem;
     }
-    
     .cta-content h2 {
         font-size: 2rem !important;
     }
-    
     .cta-content p {
         font-size: 0.95rem;
     }
-    
     .cta-content .btn-primary {
         width: 80%;
         padding: 14px 20px;
         font-size: 0.95rem;
     }
-    
     .packages-grid {
         grid-template-columns: 1fr !important;
         gap: 20px;
     }
-    
     .package-card {
         max-width: 100%;
     }
-    
     .package-header h3 {
         font-size: 1.3rem;
     }
-    
     .package-price {
         font-size: 2.2rem !important;
     }
-    
     .package-body ul li {
         font-size: 0.85rem;
         padding: 8px 0;
     }
-    
     .package-body .btn {
         width: 100%;
     }
-    
     .package-card.featured::before {
         font-size: 0.6rem;
         padding: 3px 25px;
         right: -25px;
     }
-    
     .gallery-masonry {
         grid-template-columns: 1fr 1fr !important;
         grid-auto-rows: 200px;
         gap: 10px;
     }
-    
     .gallery-masonry .gallery-item:nth-child(1),
     .gallery-masonry .gallery-item:nth-child(4),
     .gallery-masonry .gallery-item:nth-child(7) {
         grid-row: span 1;
     }
-    
     .gallery-masonry .gallery-item .gallery-overlay {
         padding: 15px 12px 12px;
     }
-    
     .gallery-masonry .gallery-item .gallery-overlay h3 {
         font-size: 0.9rem;
     }
-    
     .gallery-masonry .gallery-item .gallery-overlay p {
         font-size: 0.75rem;
     }
-    
     .contact-info-side {
         grid-template-columns: 1fr !important;
         gap: 12px;
     }
-    
     .contact-info-card {
         padding: 18px 20px;
         gap: 15px;
     }
-    
     .contact-info-card .icon-box {
         width: 45px;
         height: 45px;
         min-width: 45px;
         font-size: 1.2rem;
     }
-    
     .contact-info-card .info-content h3 {
         font-size: 0.75rem;
     }
-    
     .contact-info-card .info-content p {
         font-size: 0.9rem;
     }
-    
     .contact-info-card .info-content .social-links-small a {
         font-size: 1.2rem;
     }
-    
     .contact-form-side {
         padding: 25px;
     }
-    
     .contact-form-side .form-header h2 {
         font-size: 1.4rem;
     }
-    
     .contact-form-side .form-header p {
         font-size: 0.85rem;
     }
-    
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
     }
-    
     .form-group {
         margin-bottom: 14px;
     }
-    
     .form-group input,
     .form-group select,
     .form-group textarea {
         padding: 10px 14px;
         font-size: 0.9rem;
     }
-    
     .btn-submit {
         padding: 12px;
         font-size: 0.95rem;
     }
-    
     .map-container iframe {
         height: 250px;
     }
-    
     .map-overlay {
         font-size: 0.7rem;
         padding: 8px 16px;
@@ -2004,155 +2113,129 @@ h1, h2, h3, h4, h5 {
         justify-content: center;
         gap: 8px;
     }
-    
     .page-header {
         padding: 120px 0 40px !important;
     }
-    
     .page-header h1 {
         font-size: 2.2rem !important;
     }
-    
     .page-header p {
         font-size: 0.9rem;
     }
-    
     .lightbox-content {
         max-width: 95%;
         max-height: 70vh;
     }
-    
     .close-lightbox {
         top: 20px;
         right: 25px;
         font-size: 2rem !important;
     }
-    
     .lightbox-caption {
         font-size: 0.8rem;
         padding: 8px 18px;
         bottom: 20px;
     }
-    
     .footer {
         padding: 50px 0 15px;
     }
-    
     .footer-grid {
         grid-template-columns: 1fr !important;
         gap: 30px;
         text-align: center;
     }
-    
     .social-links {
         justify-content: center;
     }
-    
     .footer-col ul {
         text-align: center;
     }
-    
     .footer-col ul li {
         font-size: 0.85rem;
     }
-    
     .footer-bottom {
         font-size: 0.8rem;
     }
 }
 
+
 /* Very Small Phones */
+
 @media (max-width: 480px) {
     .hero-title {
         font-size: 2.2rem !important;
     }
-    
     .hero-subtitle {
         font-size: 1rem !important;
     }
-    
     .stat-number {
         font-size: 1.5rem !important;
     }
-    
     .stat-label {
         font-size: 0.6rem !important;
     }
-    
     .portfolio-grid {
         grid-template-columns: 1fr !important;
     }
-    
     .gallery-masonry {
         grid-template-columns: 1fr !important;
     }
-    
     .contact-info-card {
         padding: 14px 16px;
         gap: 12px;
     }
-    
     .contact-info-card .icon-box {
         width: 38px;
         height: 38px;
         min-width: 38px;
         font-size: 1rem;
     }
-    
     .contact-form-side {
         padding: 18px;
     }
-    
     .contact-form-side .form-header h2 {
         font-size: 1.2rem;
     }
-    
     .form-group input,
     .form-group select,
     .form-group textarea {
         padding: 8px 12px;
         font-size: 0.85rem;
     }
-    
     .map-container iframe {
         height: 200px;
     }
-    
     .map-overlay {
         font-size: 0.6rem;
         padding: 6px 12px;
         bottom: 8px;
         gap: 6px;
     }
-    
     .map-overlay i {
         font-size: 0.8rem;
     }
-    
     .section-header h2 {
         font-size: 1.6rem !important;
     }
-    
     .btn {
         padding: 12px 20px;
         font-size: 0.9rem;
     }
 }
 
+
 /* Large Screens */
+
 @media (min-width: 1400px) {
     .contact-wrapper {
         gap: 60px;
     }
-    
     .contact-info-card {
         padding: 30px 35px;
     }
-    
     .contact-form-side {
         padding: 50px;
     }
-    
     .map-container iframe {
         height: 500px;
     }

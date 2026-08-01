@@ -1,9 +1,9 @@
 // ========================================
 // MAHADEV PHOTOGRAPHY - COMPLETE
-// VERSION: 3.0.1
+// VERSION: 4.0.0
 // ========================================
 
-const APP_VERSION = '3.0.1';
+const APP_VERSION = '4.0.0';
 
 // ========================================
 // FORCE CLEAR ON VERSION CHANGE
@@ -94,7 +94,7 @@ const DataStore = {
 window.DataStore = DataStore;
 
 // ========================================
-// INITIAL DATA
+// INITIAL DATA - UPDATED CATEGORIES
 // ========================================
 
 function initializeData() {
@@ -108,24 +108,24 @@ function initializeData() {
             },
             {
                 id: 2,
-                title: 'Corporate Event',
-                category: 'event',
-                image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
-                description: 'Professional event coverage'
+                title: 'Engagement Ceremony',
+                category: 'engagement',
+                image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop',
+                description: 'Beautiful engagement moments'
             },
             {
                 id: 3,
-                title: 'Portrait Session',
-                category: 'portrait',
-                image: 'https://images.unsplash.com/photo-1499952127939-9bbf5af6c51c?w=600&h=400&fit=crop',
-                description: 'Capturing personality'
+                title: 'Pre Wedding Shoot',
+                category: 'prewedding',
+                image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=400&fit=crop',
+                description: 'Romantic pre-wedding sessions'
             },
             {
                 id: 4,
-                title: 'Nature Landscape',
-                category: 'nature',
-                image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=400&fit=crop',
-                description: 'Breathtaking landscapes'
+                title: 'Baby Shower Celebration',
+                category: 'babyshower',
+                image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&h=400&fit=crop',
+                description: 'Joyful baby shower moments'
             }
         ];
         DataStore.set('portfolio', portfolio);
@@ -426,7 +426,8 @@ function loadGalleryPreview() {
     var html = '';
     items.forEach(function(item) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-        html += '<div class="portfolio-item" data-category="' + item.category + '">';
+        var categoryClass = 'category-' + (item.category || 'custom');
+        html += '<div class="portfolio-item ' + categoryClass + '" data-category="' + item.category + '">';
         html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/400x300/eee/999?text=Image+Not+Found\';">';
         html += '<div class="portfolio-overlay">';
         html += '<h3>' + item.title + '</h3>';
@@ -449,7 +450,8 @@ function loadGalleryPage() {
     var html = '';
     items.forEach(function(item) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-        html += '<div class="gallery-item" data-id="' + item.id + '">';
+        var categoryClass = 'category-' + (item.category || 'custom');
+        html += '<div class="gallery-item ' + categoryClass + '" data-id="' + item.id + '">';
         html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/400x300/eee/999?text=Image+Not+Found\';">';
         html += '<div class="gallery-overlay">';
         html += '<h3>' + item.title + '</h3>';
@@ -1071,7 +1073,7 @@ function initAdminGallery() {
                 };
                 img.src = url;
             } else {
-                quickPreview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL above</small></div>';
+                quickPreview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#555;">Enter a URL above</small></div>';
                 quickPreview.classList.remove('has-preview');
             }
         });
@@ -1115,7 +1117,10 @@ function renderAdminGallery(container) {
     var html = '';
     items.forEach(function(item, index) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-        html += '<div class="gallery-card">';
+        var displayDescription = item.description || '';
+        var categoryClass = 'category-' + (item.category || 'custom');
+
+        html += '<div class="gallery-card ' + categoryClass + '">';
         html += '<div class="image-wrapper">';
         html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
         html += '<div class="image-overlay">';
@@ -1126,7 +1131,7 @@ function renderAdminGallery(container) {
         html += '<div class="card-body">';
         html += '<h3 class="card-title">' + (item.title || 'Image ' + (index + 1)) + '</h3>';
         html += '<span class="card-category">' + (item.category || 'custom') + '</span>';
-        html += '<p class="card-description">' + (item.description || '') + '</p>';
+        html += '<p class="card-description">' + (displayDescription) + '</p>';
         html += '</div>';
         html += '<div class="card-footer">';
         html += '<span class="image-id">ID: ' + item.id + '</span>';
@@ -1140,6 +1145,10 @@ function renderAdminGallery(container) {
     updateStats();
 }
 
+// ========================================
+// UPDATE STATS - NEW CATEGORIES
+// ========================================
+
 function updateStats() {
     var items = DataStore.get('portfolio');
     var count = items ? items.length : 0;
@@ -1148,23 +1157,27 @@ function updateStats() {
     if (totalEl) totalEl.textContent = count;
 
     var weddingCount = 0,
-        eventCount = 0,
-        portraitCount = 0;
+        engagementCount = 0,
+        preweddingCount = 0,
+        babyshowerCount = 0;
     if (items) {
         items.forEach(function(item) {
             if (item.category === 'wedding') weddingCount++;
-            else if (item.category === 'event') eventCount++;
-            else if (item.category === 'portrait') portraitCount++;
+            else if (item.category === 'engagement') engagementCount++;
+            else if (item.category === 'prewedding') preweddingCount++;
+            else if (item.category === 'babyshower') babyshowerCount++;
         });
     }
 
     var weddingEl = document.getElementById('weddingCount');
-    var eventEl = document.getElementById('eventCount');
-    var portraitEl = document.getElementById('portraitCount');
+    var engagementEl = document.getElementById('engagementCount');
+    var preweddingEl = document.getElementById('preweddingCount');
+    var babyshowerEl = document.getElementById('babyshowerCount');
 
     if (weddingEl) weddingEl.textContent = weddingCount;
-    if (eventEl) eventEl.textContent = eventCount;
-    if (portraitEl) portraitEl.textContent = portraitCount;
+    if (engagementEl) engagementEl.textContent = engagementCount;
+    if (preweddingEl) preweddingEl.textContent = preweddingCount;
+    if (babyshowerEl) babyshowerEl.textContent = babyshowerCount;
 }
 
 // ========================================
@@ -1215,7 +1228,7 @@ window.quickAddImage = function() {
         title: title || 'My Photo',
         category: category,
         image: url,
-        description: description || 'Added manually'
+        description: description || ''
     };
     portfolio.push(newItem);
     DataStore.set('portfolio', portfolio);
@@ -1228,7 +1241,7 @@ window.quickAddImage = function() {
 
     var preview = document.getElementById('quickPreview');
     if (preview) {
-        preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL above</small></div>';
+        preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#555;">Enter a URL above</small></div>';
         preview.classList.remove('has-preview');
     }
 
@@ -1276,7 +1289,7 @@ window.handleUrlUpload = function() {
             title: 'Image ' + (portfolio.length + addedCount + 1),
             category: 'custom',
             image: url,
-            description: 'Added via bulk upload'
+            description: ''
         });
         addedCount++;
         existingUrls[url] = true;
@@ -1315,7 +1328,7 @@ window.viewImage = function(id) {
     document.getElementById('viewImage').src = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
     document.getElementById('viewTitleText').textContent = item.title || 'Untitled';
     document.getElementById('viewCategory').textContent = item.category || 'custom';
-    document.getElementById('viewDescription').textContent = item.description || 'No description';
+    document.getElementById('viewDescription').textContent = item.description || '';
     document.getElementById('viewId').textContent = item.id;
     document.getElementById('viewPath').textContent = item.image || 'No path';
     document.getElementById('viewTitle').textContent = '📸 ' + (item.title || 'Image Details');
@@ -1328,6 +1341,7 @@ function closeViewModal() {
 }
 
 window.editImage = function(id) {
+    console.log('Edit Image triggered for ID:', id);
     var items = DataStore.get('portfolio');
     if (!items) {
         showToast('Image not found.', 'error');
@@ -1336,7 +1350,7 @@ window.editImage = function(id) {
 
     var item = null;
     for (var i = 0; i < items.length; i++) {
-        if (items[i].id === id) {
+        if (String(items[i].id) === String(id)) {
             item = items[i];
             break;
         }
@@ -1344,7 +1358,7 @@ window.editImage = function(id) {
     if (item) {
         openPortfolioModal(item);
     } else {
-        showToast('Image not found.', 'error');
+        showToast('Image not found with ID: ' + id, 'error');
     }
 };
 
@@ -1356,7 +1370,7 @@ window.deleteImage = function(id) {
 
     var newPortfolio = [];
     for (var i = 0; i < portfolio.length; i++) {
-        if (portfolio[i].id !== id) {
+        if (String(portfolio[i].id) !== String(id)) {
             newPortfolio.push(portfolio[i]);
         }
     }
@@ -1388,6 +1402,7 @@ window.refreshGallery = function() {
 };
 
 function openPortfolioModal(item) {
+    console.log('Opening edit modal for:', item);
     var modal = document.getElementById('portfolioModal');
     var form = document.getElementById('portfolioForm');
     var title = document.getElementById('modalTitle');
@@ -1396,7 +1411,9 @@ function openPortfolioModal(item) {
     if (!modal || !form) return;
 
     title.textContent = item ? '✏️ Edit Image' : '📷 Add New Image';
+
     form.reset();
+
     document.getElementById('portfolioId').value = item ? item.id : '';
     document.getElementById('portTitle').value = item ? item.title : '';
     document.getElementById('portCategory').value = item ? item.category : 'custom';
@@ -1404,31 +1421,35 @@ function openPortfolioModal(item) {
     document.getElementById('portDescription').value = item ? item.description : '';
 
     if (item && item.image) {
-        preview.innerHTML = '<img src="' + item.image + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'>Image not found</div>\'">';
+        preview.innerHTML = '<img src="' + item.image + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'><i class=\\\'fas fa-image\\\'></i> Image not found</div>\'">';
     } else {
-        preview.innerHTML = '<div class="no-preview">No image preview</div>';
+        preview.innerHTML = '<div class="no-preview"><i class="fas fa-image"></i> No image preview</div>';
     }
 
     modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     var modal = document.getElementById('portfolioModal');
     if (modal) {
         modal.classList.remove('active');
+        document.body.style.overflow = '';
     }
 }
 
 function savePortfolio(form) {
-    var id = parseInt(document.getElementById('portfolioId').value);
-    var item = {
-        title: document.getElementById('portTitle').value.trim(),
-        category: document.getElementById('portCategory').value,
-        image: document.getElementById('portImage').value.trim(),
-        description: document.getElementById('portDescription').value.trim()
-    };
+    console.log('Saving portfolio item...');
 
-    if (!item.title || !item.category || !item.image) {
+    var id = document.getElementById('portfolioId').value;
+    var title = document.getElementById('portTitle').value.trim();
+    var category = document.getElementById('portCategory').value;
+    var image = document.getElementById('portImage').value.trim();
+    var description = document.getElementById('portDescription').value.trim();
+
+    console.log('ID:', id, 'Title:', title, 'Category:', category, 'Description:', description);
+
+    if (!title || !category || !image) {
         showToast('Please fill in all fields.', 'error');
         return;
     }
@@ -1437,33 +1458,125 @@ function savePortfolio(form) {
     if (!portfolio) portfolio = [];
 
     if (id) {
-        var index = -1;
+        var found = false;
         for (var i = 0; i < portfolio.length; i++) {
-            if (portfolio[i].id === id) {
-                index = i;
+            if (String(portfolio[i].id) === String(id)) {
+                portfolio[i] = {
+                    id: portfolio[i].id,
+                    title: title,
+                    category: category,
+                    image: image,
+                    description: description || ''
+                };
+                found = true;
+                console.log('✅ Updated item at index:', i, portfolio[i]);
                 break;
             }
         }
-        if (index !== -1) {
-            portfolio[index] = {
-                id: portfolio[index].id,
-                title: item.title,
-                category: item.category,
-                image: item.image,
-                description: item.description
-            };
+
+        if (found) {
+            DataStore.set('portfolio', portfolio);
+            showToast('✅ Image updated successfully!', 'success');
+            closeModal();
+            renderAdminGallery(document.getElementById('adminGalleryGrid'));
+        } else {
+            showToast('❌ Image not found in portfolio. Please refresh and try again.', 'error');
         }
-        showToast('✅ Image updated successfully!', 'success');
     } else {
-        item.id = Date.now() + Math.random() * 1000;
-        portfolio.push(item);
+        var newItem = {
+            id: Date.now() + Math.random() * 1000,
+            title: title,
+            category: category,
+            image: image,
+            description: description || ''
+        };
+        portfolio.push(newItem);
+        DataStore.set('portfolio', portfolio);
+        console.log('✅ Added new item:', newItem);
         showToast('✅ Image added successfully!', 'success');
+        closeModal();
+        renderAdminGallery(document.getElementById('adminGalleryGrid'));
+    }
+}
+
+// ========================================
+// PREVIEW ON INPUT
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Preview for quick add
+    var urlInput = document.getElementById('quickImageUrl');
+    var preview = document.getElementById('quickPreview');
+
+    if (urlInput && preview) {
+        urlInput.addEventListener('input', function() {
+            var url = this.value.trim();
+            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                preview.innerHTML = '<img src="' + url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div style=\'color:#e74c3c;padding:20px;\'><i class=\'fas fa-exclamation-triangle\' style=\'font-size:2rem;display:block;margin-bottom:10px;\'></i><p>Cannot preview image</p><small>' + url + '</small></div>\'">';
+                preview.classList.add('has-preview');
+            } else {
+                preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#555;">Enter a URL above</small></div>';
+                preview.classList.remove('has-preview');
+            }
+        });
     }
 
-    DataStore.set('portfolio', portfolio);
-    closeModal();
+    // Preview for modal
+    var modalImageInput = document.getElementById('portImage');
+    var modalPreview = document.getElementById('modalPreview');
+
+    if (modalImageInput && modalPreview) {
+        modalImageInput.addEventListener('input', function() {
+            var url = this.value.trim();
+            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                modalPreview.innerHTML = '<img src="' + url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'><i class=\\\'fas fa-image\\\'></i> Image not found</div>\'">';
+            } else {
+                modalPreview.innerHTML = '<div class="no-preview"><i class="fas fa-image"></i> No image preview</div>';
+            }
+        });
+    }
+
+    // Form submit
+    var form = document.getElementById('portfolioForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            savePortfolio(this);
+        });
+    }
+
+    // Initial render
     renderAdminGallery(document.getElementById('adminGalleryGrid'));
-}
+
+    console.log('✅ Gallery loaded successfully!');
+});
+
+// ========================================
+// CLOSE MODAL ON CLICK OUTSIDE
+// ========================================
+document.addEventListener('click', function(e) {
+    var modal = document.getElementById('portfolioModal');
+    if (modal && modal.classList.contains('active')) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    }
+    var viewModal = document.getElementById('viewModal');
+    if (viewModal && viewModal.classList.contains('active')) {
+        if (e.target === viewModal) {
+            closeViewModal();
+        }
+    }
+});
+
+// ========================================
+// ESCAPE KEY TO CLOSE
+// ========================================
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+        closeViewModal();
+    }
+});
 
 // ========================================
 // MOBILE FORCE RELOAD
