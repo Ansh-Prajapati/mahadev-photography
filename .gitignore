@@ -20,3 +20,6 @@ desktop.ini
 *.tmp
 *.temp
 *.cache
+
+# Local storage
+*.localstorage

@@ -1,30 +1,102 @@
 // ========================================
-// DATA STORE
+// MAHADEV PHOTOGRAPHY - COMPLETE
+// VERSION: 3.0.1
 // ========================================
+
+const APP_VERSION = '3.0.1';
+
+// ========================================
+// FORCE CLEAR ON VERSION CHANGE
+// ========================================
+
+(function() {
+    console.log('🚀 Mahadev Photography v' + APP_VERSION);
+
+    var storedVersion = localStorage.getItem('mahadev_version');
+
+    if (storedVersion !== APP_VERSION) {
+        console.log('🔄 New version detected! Clearing cache...');
+
+        var keepKeys = ['adminAuth'];
+        var allKeys = Object.keys(localStorage);
+
+        allKeys.forEach(function(key) {
+            if (keepKeys.indexOf(key) === -1) {
+                localStorage.removeItem(key);
+            }
+        });
+
+        localStorage.setItem('mahadev_version', APP_VERSION);
+        console.log('✅ Cache cleared!');
+
+        if (performance.navigation.type !== 1) {
+            setTimeout(function() {
+                window.location.reload(true);
+            }, 500);
+        }
+    }
+})();
+
+// ========================================
+// DATA STORE WITH EXPIRY
+// ========================================
+
 const DataStore = {
     get: function(key, defaultVal = []) {
         try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : defaultVal;
+            var data = localStorage.getItem(key);
+            if (!data) return defaultVal;
+
+            var parsed = JSON.parse(data);
+
+            if (parsed && parsed._expiry) {
+                if (Date.now() > parsed._expiry) {
+                    localStorage.removeItem(key);
+                    return defaultVal;
+                }
+                return parsed.value || defaultVal;
+            }
+
+            return parsed || defaultVal;
         } catch (e) {
             console.error('Error reading from localStorage:', e);
             return defaultVal;
         }
     },
-    set: function(key, data) {
+
+    set: function(key, data, expiryHours = 24) {
         try {
-            localStorage.setItem(key, JSON.stringify(data));
+            var item = {
+                value: data,
+                _expiry: Date.now() + (expiryHours * 60 * 60 * 1000)
+            };
+            localStorage.setItem(key, JSON.stringify(item));
             return true;
         } catch (e) {
             console.error('Error saving to localStorage:', e);
             return false;
         }
+    },
+
+    clear: function() {
+        var keepKeys = ['adminAuth', 'mahadev_version'];
+        var allKeys = Object.keys(localStorage);
+
+        allKeys.forEach(function(key) {
+            if (keepKeys.indexOf(key) === -1) {
+                localStorage.removeItem(key);
+            }
+        });
+        console.log('🗑️ All data cleared!');
     }
 };
+
+window.DataStore = DataStore;
 
 // ========================================
 // INITIAL DATA
 // ========================================
+
 function initializeData() {
     if (!localStorage.getItem('portfolio')) {
         var portfolio = [{
@@ -93,12 +165,13 @@ function initializeData() {
 // ========================================
 // ADMIN AUTHENTICATION
 // ========================================
+
 function isAuthenticated() {
     return localStorage.getItem('adminAuth') === 'true';
 }
 
 function loginAdmin(email, password) {
-    if (email === 'mahadevphotography1921@gmail.com' && password === 'Brijesh@312') {
+    if (email === 'admin@mahadevphotography.com' && password === 'admin123') {
         localStorage.setItem('adminAuth', 'true');
         return true;
     }
@@ -113,6 +186,7 @@ function logoutAdmin() {
 // ========================================
 // TOAST NOTIFICATION
 // ========================================
+
 function showToast(message, type) {
     if (type === undefined) {
         type = 'info';
@@ -144,9 +218,12 @@ function showToast(message, type) {
     }, 4000);
 }
 
+window.showToast = showToast;
+
 // ========================================
-// MOBILE NAVIGATION
+// NAVIGATION
 // ========================================
+
 function initNavigation() {
     var hamburger = document.getElementById('hamburger');
     var navMenu = document.getElementById('navMenu');
@@ -188,6 +265,7 @@ function initNavigation() {
 // ========================================
 // HERO STATS
 // ========================================
+
 function initHeroStats() {
     var statNumbers = document.querySelectorAll('.stat-number');
     if (!statNumbers.length) {
@@ -226,6 +304,7 @@ function animateCounter(el, target) {
 // ========================================
 // LIGHTBOX WITH ZOOM
 // ========================================
+
 function initLightbox() {
     var lightbox = document.getElementById('lightbox');
     if (!lightbox) return;
@@ -331,8 +410,9 @@ function closeLightbox() {
 }
 
 // ========================================
-// CLIENT SIDE GALLERY FUNCTIONS
+// CLIENT SIDE GALLERY
 // ========================================
+
 function loadGalleryPreview() {
     var container = document.getElementById('galleryPreview');
     if (!container) return;
@@ -389,6 +469,7 @@ function loadGalleryPage() {
 // ========================================
 // PACKAGES
 // ========================================
+
 function loadPackages() {
     var container = document.getElementById('packagesGrid');
     if (!container) return;
@@ -420,8 +501,9 @@ function loadPackages() {
 }
 
 // ========================================
-// CONTACT FORM WITH FORMSPREE
+// CONTACT FORM
 // ========================================
+
 function initContactForm() {
     var form = document.getElementById('contactForm');
     if (!form) return;
@@ -526,6 +608,7 @@ function initContactForm() {
 // ========================================
 // ADMIN PANEL INIT
 // ========================================
+
 function initAdminPanel() {
     var currentPage = window.location.pathname;
 
@@ -563,6 +646,7 @@ function initAdminPanel() {
 // ========================================
 // ADMIN LOGIN
 // ========================================
+
 function initAdminLogin() {
     var form = document.getElementById('adminLoginForm');
     if (!form) return;
@@ -588,51 +672,77 @@ function initAdminLogin() {
 // ========================================
 // ADMIN DASHBOARD
 // ========================================
+
 function initAdminDashboard() {
-    var portfolio = DataStore.get('portfolio');
-    var packages = DataStore.get('packages');
-    var submissions = DataStore.get('submissions');
+    console.log('📊 Loading Dashboard...');
 
-    var stats = document.querySelectorAll('.stat-number');
-    stats.forEach(function(el) {
-        var stat = el.dataset.stat;
-        if (stat === 'portfolio') {
-            el.textContent = portfolio.length;
-        } else if (stat === 'packages') {
-            el.textContent = packages.length;
-        } else if (stat === 'submissions') {
-            el.textContent = submissions.length;
-        } else if (stat === 'revenue') {
-            var total = 0;
-            packages.forEach(function(p) { total += p.price; });
-            el.textContent = '₹' + total.toLocaleString();
-        }
-    });
+    try {
+        var portfolio = DataStore.get('portfolio', []);
+        var packages = DataStore.get('packages', []);
+        var submissions = DataStore.get('submissions', []);
 
-    var recentTable = document.getElementById('recentSubmissions');
-    if (recentTable) {
-        var recent = submissions.slice(-5).reverse();
-        if (recent.length === 0) {
-            recentTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No submissions yet.</td></tr>';
-        } else {
-            var html = '';
-            recent.forEach(function(s) {
-                var statusColor = s.status === 'new' ? '#e74c3c' : '#27ae60';
-                html += '<tr>';
-                html += '<td><strong>' + s.name + '</strong></td>';
-                html += '<td>' + s.email + '</td>';
-                html += '<td><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;">' + s.status + '</span></td>';
-                html += '<td>' + s.date + '</td>';
-                html += '</tr>';
+        var portfolioCount = Array.isArray(portfolio) ? portfolio.length : 0;
+        var packagesCount = Array.isArray(packages) ? packages.length : 0;
+        var submissionsCount = Array.isArray(submissions) ? submissions.length : 0;
+
+        var totalRevenue = 0;
+        if (Array.isArray(packages)) {
+            packages.forEach(function(pkg) {
+                var price = parseFloat(pkg.price) || 0;
+                totalRevenue += price;
             });
-            recentTable.innerHTML = html;
         }
+
+        console.log('📸 Portfolio:', portfolioCount);
+        console.log('📦 Packages:', packagesCount);
+        console.log('📩 Submissions:', submissionsCount);
+        console.log('💰 Revenue:', totalRevenue);
+
+        var statPortfolio = document.getElementById('statPortfolio');
+        var statPackages = document.getElementById('statPackages');
+        var statSubmissions = document.getElementById('statSubmissions');
+        var statRevenue = document.getElementById('statRevenue');
+
+        if (statPortfolio) statPortfolio.textContent = portfolioCount;
+        if (statPackages) statPackages.textContent = packagesCount;
+        if (statSubmissions) statSubmissions.textContent = submissionsCount;
+        if (statRevenue) statRevenue.textContent = '₹' + totalRevenue.toLocaleString();
+
+        var recentTable = document.getElementById('recentSubmissions');
+        if (recentTable) {
+            var recent = Array.isArray(submissions) ? submissions.slice(-5).reverse() : [];
+
+            if (recent.length === 0) {
+                recentTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No submissions yet.</td></tr>';
+            } else {
+                var html = '';
+                recent.forEach(function(s) {
+                    var statusColor = s.status === 'new' ? '#e74c3c' : '#27ae60';
+                    var statusText = s.status || 'new';
+                    var dateText = s.date || new Date().toLocaleString();
+
+                    html += '<tr>';
+                    html += '<td><strong>' + (s.name || 'Unknown') + '</strong></td>';
+                    html += '<td>' + (s.email || 'N/A') + '</td>';
+                    html += '<td><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;">' + statusText + '</span></td>';
+                    html += '<td>' + dateText + '</td>';
+                    html += '</tr>';
+                });
+                recentTable.innerHTML = html;
+            }
+        }
+
+        console.log('✅ Dashboard Updated!');
+    } catch (error) {
+        console.error('❌ Dashboard Error:', error);
+        showToast('Error loading dashboard data.', 'error');
     }
 }
 
 // ========================================
 // ADMIN PACKAGES (CRUD)
 // ========================================
+
 function initAdminPackages() {
     var table = document.getElementById('packagesTable');
     if (!table) return;
@@ -691,10 +801,6 @@ function renderPackagesTable(table) {
     table.innerHTML = html;
 }
 
-// ========================================
-// PACKAGE MODAL FUNCTIONS
-// ========================================
-
 function openPackageModal(pkg) {
     var modal = document.getElementById('packageModal');
     var form = document.getElementById('packageForm');
@@ -712,17 +818,6 @@ function openPackageModal(pkg) {
 
     modal.classList.add('active');
 }
-
-function closeModal() {
-    var modal = document.getElementById('packageModal');
-    var modal2 = document.getElementById('portfolioModal');
-    if (modal) modal.classList.remove('active');
-    if (modal2) modal2.classList.remove('active');
-}
-
-// Make them global
-window.openPackageModal = openPackageModal;
-window.closeModal = closeModal;
 
 function closeModal() {
     var modal = document.getElementById('packageModal');
@@ -808,6 +903,7 @@ window.deletePackage = function(id) {
 // ========================================
 // ADMIN SUBMISSIONS
 // ========================================
+
 function initAdminSubmissions() {
     var table = document.getElementById('submissionsTable');
     if (!table) return;
@@ -919,17 +1015,13 @@ window.deleteSubmission = function(id) {
 };
 
 // ========================================
-// ADMIN GALLERY (FULL CRUD)
+// ADMIN GALLERY
 // ========================================
-function initAdminGallery() {
-    console.log('Initializing Admin Gallery...');
-    var container = document.getElementById('adminGalleryGrid');
-    if (!container) {
-        console.error('Gallery container not found');
-        return;
-    }
 
-    renderAdminGallery(container);
+function initAdminGallery() {
+    console.log('📸 Initializing Admin Gallery...');
+
+    renderAdminGallery(document.getElementById('adminGalleryGrid'));
     updateStats();
 
     // Quick Add Button
@@ -953,7 +1045,7 @@ function initAdminGallery() {
         });
     }
 
-    // Bulk Upload Button
+    // Bulk Upload
     var bulkBtn = document.querySelector('.btn-bulk');
     if (bulkBtn) {
         bulkBtn.addEventListener('click', handleUrlUpload);
@@ -967,28 +1059,21 @@ function initAdminGallery() {
         quickUrlInput.addEventListener('input', function() {
             var url = this.value.trim();
 
-            if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('images/'))) {
+            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
                 var img = new Image();
                 img.onload = function() {
-                    quickPreview.innerHTML = '<img src="' + url + '" alt="Preview">';
+                    quickPreview.innerHTML = '<img src="' + url + '" alt="Preview" style="max-width:100%;max-height:250px;border-radius:8px;">';
                     quickPreview.classList.add('has-preview');
                 };
                 img.onerror = function() {
-                    quickPreview.innerHTML = '<div style="color:#e74c3c;padding:20px;"><i class="fas fa-exclamation-triangle" style="font-size:2rem;display:block;margin-bottom:10px;"></i><p>Cannot preview image</p><small>' + url + '</small></div>';
+                    quickPreview.innerHTML = '<div style="color:#e74c3c;padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:2rem;display:block;margin-bottom:10px;"></i><p>Cannot preview image</p><small>' + url + '</small></div>';
                     quickPreview.classList.add('has-preview');
                 };
                 img.src = url;
             } else {
-                quickPreview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL or path above</small></div>';
+                quickPreview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL above</small></div>';
                 quickPreview.classList.remove('has-preview');
             }
-        });
-
-        quickUrlInput.addEventListener('paste', function() {
-            setTimeout(function() {
-                var event = new Event('input');
-                quickUrlInput.dispatchEvent(event);
-            }, 100);
         });
     }
 
@@ -1014,16 +1099,14 @@ function initAdminGallery() {
 
 function renderAdminGallery(container) {
     var items = DataStore.get('portfolio');
-    if (!container) {
-        return;
-    }
+    if (!container) return;
 
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         container.innerHTML = `
             <div class="empty-gallery-state">
                 <i class="fas fa-images"></i>
                 <h3>No Images in Gallery</h3>
-                <p>Start adding your photos using the form above or bulk upload.</p>
+                <p>Add your first image using the form above.</p>
             </div>
         `;
         return;
@@ -1032,7 +1115,6 @@ function renderAdminGallery(container) {
     var html = '';
     items.forEach(function(item, index) {
         var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-
         html += '<div class="gallery-card">';
         html += '<div class="image-wrapper">';
         html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
@@ -1060,18 +1142,21 @@ function renderAdminGallery(container) {
 
 function updateStats() {
     var items = DataStore.get('portfolio');
+    var count = items ? items.length : 0;
 
     var totalEl = document.getElementById('totalImages');
-    if (totalEl) totalEl.textContent = items.length;
+    if (totalEl) totalEl.textContent = count;
 
     var weddingCount = 0,
         eventCount = 0,
         portraitCount = 0;
-    items.forEach(function(item) {
-        if (item.category === 'wedding') weddingCount++;
-        else if (item.category === 'event') eventCount++;
-        else if (item.category === 'portrait') portraitCount++;
-    });
+    if (items) {
+        items.forEach(function(item) {
+            if (item.category === 'wedding') weddingCount++;
+            else if (item.category === 'event') eventCount++;
+            else if (item.category === 'portrait') portraitCount++;
+        });
+    }
 
     var weddingEl = document.getElementById('weddingCount');
     var eventEl = document.getElementById('eventCount');
@@ -1083,48 +1168,9 @@ function updateStats() {
 }
 
 // ========================================
-// CRUD - VIEW IMAGE
+// GALLERY CRUD OPERATIONS
 // ========================================
-window.viewImage = function(id) {
-    var items = DataStore.get('portfolio');
-    var item = null;
-    for (var i = 0; i < items.length; i++) {
-        if (items[i].id === id) {
-            item = items[i];
-            break;
-        }
-    }
-    if (!item) {
-        showToast('Image not found.', 'error');
-        return;
-    }
 
-    var viewImage = document.getElementById('viewImage');
-    var viewTitleText = document.getElementById('viewTitleText');
-    var viewCategory = document.getElementById('viewCategory');
-    var viewDescription = document.getElementById('viewDescription');
-    var viewId = document.getElementById('viewId');
-    var viewPath = document.getElementById('viewPath');
-    var viewTitle = document.getElementById('viewTitle');
-
-    if (viewImage) viewImage.src = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-    if (viewTitleText) viewTitleText.textContent = item.title || 'Untitled';
-    if (viewCategory) viewCategory.textContent = item.category || 'custom';
-    if (viewDescription) viewDescription.textContent = item.description || 'No description';
-    if (viewId) viewId.textContent = item.id;
-    if (viewPath) viewPath.textContent = item.image || 'No path';
-    if (viewTitle) viewTitle.textContent = '📸 ' + (item.title || 'Image Details');
-
-    document.getElementById('viewModal').classList.add('active');
-};
-
-function closeViewModal() {
-    document.getElementById('viewModal').classList.remove('active');
-}
-
-// ========================================
-// CRUD - QUICK ADD IMAGE
-// ========================================
 window.quickAddImage = function() {
     console.log('Quick Add triggered');
     var urlInput = document.getElementById('quickImageUrl');
@@ -1143,17 +1189,13 @@ window.quickAddImage = function() {
     var description = descriptionInput ? descriptionInput.value.trim() : '';
 
     if (!url) {
-        showToast('Please enter an image URL or path.', 'error');
+        showToast('Please enter an image URL.', 'error');
         urlInput.focus();
         return;
     }
 
-    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('images/')) {
-        url = 'images/' + url;
-        urlInput.value = url;
-    }
-
     var portfolio = DataStore.get('portfolio');
+    if (!portfolio) portfolio = [];
 
     var exists = false;
     for (var i = 0; i < portfolio.length; i++) {
@@ -1179,26 +1221,119 @@ window.quickAddImage = function() {
     DataStore.set('portfolio', portfolio);
 
     showToast('✅ Photo added successfully!', 'success');
+
     urlInput.value = '';
     if (titleInput) titleInput.value = '';
     if (descriptionInput) descriptionInput.value = '';
 
     var preview = document.getElementById('quickPreview');
     if (preview) {
-        preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL or path above</small></div>';
+        preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#bbb;">Enter a URL above</small></div>';
         preview.classList.remove('has-preview');
     }
 
     renderAdminGallery(document.getElementById('adminGalleryGrid'));
-    updateStats();
 };
 
-// ========================================
-// CRUD - EDIT IMAGE
-// ========================================
-window.editImage = function(id) {
-    console.log('Edit Image triggered for ID:', id);
+window.handleUrlUpload = function() {
+    console.log('Bulk Upload triggered');
+    var urlInput = document.getElementById('urlInput');
+    if (!urlInput) {
+        showToast('Input field not found.', 'error');
+        return;
+    }
+
+    var urls = urlInput.value.split('\n')
+        .map(function(url) { return url.trim(); })
+        .filter(function(url) { return url.length > 0; });
+
+    if (urls.length === 0) {
+        showToast('Please paste at least one image URL.', 'error');
+        urlInput.focus();
+        return;
+    }
+
+    var portfolio = DataStore.get('portfolio');
+    if (!portfolio) portfolio = [];
+
+    var addedCount = 0;
+    var skippedCount = 0;
+
+    var existingUrls = {};
+    for (var i = 0; i < portfolio.length; i++) {
+        existingUrls[portfolio[i].image] = true;
+    }
+
+    for (var j = 0; j < urls.length; j++) {
+        var url = urls[j];
+        if (existingUrls[url]) {
+            skippedCount++;
+            continue;
+        }
+
+        portfolio.push({
+            id: Date.now() + j + Math.random() * 1000,
+            title: 'Image ' + (portfolio.length + addedCount + 1),
+            category: 'custom',
+            image: url,
+            description: 'Added via bulk upload'
+        });
+        addedCount++;
+        existingUrls[url] = true;
+    }
+
+    DataStore.set('portfolio', portfolio);
+
+    var message = '✅ ' + addedCount + ' images added successfully!';
+    if (skippedCount > 0) {
+        message += ' (' + skippedCount + ' skipped - already exist)';
+    }
+    showToast(message, 'success');
+    urlInput.value = '';
+    renderAdminGallery(document.getElementById('adminGalleryGrid'));
+};
+
+window.viewImage = function(id) {
     var items = DataStore.get('portfolio');
+    if (!items) {
+        showToast('Image not found.', 'error');
+        return;
+    }
+
+    var item = null;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].id === id) {
+            item = items[i];
+            break;
+        }
+    }
+    if (!item) {
+        showToast('Image not found.', 'error');
+        return;
+    }
+
+    document.getElementById('viewImage').src = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
+    document.getElementById('viewTitleText').textContent = item.title || 'Untitled';
+    document.getElementById('viewCategory').textContent = item.category || 'custom';
+    document.getElementById('viewDescription').textContent = item.description || 'No description';
+    document.getElementById('viewId').textContent = item.id;
+    document.getElementById('viewPath').textContent = item.image || 'No path';
+    document.getElementById('viewTitle').textContent = '📸 ' + (item.title || 'Image Details');
+
+    document.getElementById('viewModal').classList.add('active');
+};
+
+function closeViewModal() {
+    document.getElementById('viewModal').classList.remove('active');
+}
+
+window.editImage = function(id) {
+    var items = DataStore.get('portfolio');
+    if (!items) {
+        showToast('Image not found.', 'error');
+        return;
+    }
+
     var item = null;
     for (var i = 0; i < items.length; i++) {
         if (items[i].id === id) {
@@ -1213,14 +1348,12 @@ window.editImage = function(id) {
     }
 };
 
-// ========================================
-// CRUD - DELETE IMAGE
-// ========================================
 window.deleteImage = function(id) {
-    console.log('Delete Image triggered for ID:', id);
     if (!confirm('Are you sure you want to delete this image?')) return;
 
     var portfolio = DataStore.get('portfolio');
+    if (!portfolio) return;
+
     var newPortfolio = [];
     for (var i = 0; i < portfolio.length; i++) {
         if (portfolio[i].id !== id) {
@@ -1230,34 +1363,30 @@ window.deleteImage = function(id) {
     DataStore.set('portfolio', newPortfolio);
     showToast('🗑️ Image deleted successfully!', 'success');
     renderAdminGallery(document.getElementById('adminGalleryGrid'));
-    updateStats();
 };
 
-// ========================================
-// CRUD - CLEAR ALL IMAGES
-// ========================================
 window.clearAllImages = function() {
-    if (!confirm('⚠️ Are you sure you want to delete ALL images? This cannot be undone!')) return;
-    if (!confirm('Really? All ' + DataStore.get('portfolio').length + ' images will be permanently deleted!')) return;
+    var items = DataStore.get('portfolio');
+    var count = items ? items.length : 0;
+
+    if (count === 0) {
+        showToast('No images to clear.', 'info');
+        return;
+    }
+
+    if (!confirm('⚠️ Are you sure you want to delete ALL ' + count + ' images? This cannot be undone!')) return;
+    if (!confirm('Really? All images will be permanently deleted!')) return;
 
     DataStore.set('portfolio', []);
     showToast('🗑️ All images cleared!', 'success');
     renderAdminGallery(document.getElementById('adminGalleryGrid'));
-    updateStats();
 };
 
-// ========================================
-// REFRESH GALLERY
-// ========================================
 window.refreshGallery = function() {
     renderAdminGallery(document.getElementById('adminGalleryGrid'));
-    updateStats();
     showToast('🔄 Gallery refreshed!', 'info');
 };
 
-// ========================================
-// OPEN PORTFOLIO MODAL (Edit)
-// ========================================
 function openPortfolioModal(item) {
     var modal = document.getElementById('portfolioModal');
     var form = document.getElementById('portfolioForm');
@@ -1283,9 +1412,13 @@ function openPortfolioModal(item) {
     modal.classList.add('active');
 }
 
-// ========================================
-// SAVE PORTFOLIO (Add/Edit)
-// ========================================
+function closeModal() {
+    var modal = document.getElementById('portfolioModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
 function savePortfolio(form) {
     var id = parseInt(document.getElementById('portfolioId').value);
     var item = {
@@ -1300,11 +1433,8 @@ function savePortfolio(form) {
         return;
     }
 
-    if (!item.image.startsWith('http://') && !item.image.startsWith('https://') && !item.image.startsWith('images/')) {
-        item.image = 'images/' + item.image;
-    }
-
     var portfolio = DataStore.get('portfolio');
+    if (!portfolio) portfolio = [];
 
     if (id) {
         var index = -1;
@@ -1333,88 +1463,56 @@ function savePortfolio(form) {
     DataStore.set('portfolio', portfolio);
     closeModal();
     renderAdminGallery(document.getElementById('adminGalleryGrid'));
-    updateStats();
 }
 
 // ========================================
-// BULK UPLOAD
+// MOBILE FORCE RELOAD
 // ========================================
-function handleUrlUpload() {
-    console.log('Bulk Upload triggered');
-    var urlInput = document.getElementById('urlInput');
-    if (!urlInput) {
-        showToast('Input field not found.', 'error');
-        return;
-    }
 
-    var urls = urlInput.value.split('\n')
-        .map(function(url) { return url.trim(); })
-        .filter(function(url) { return url.length > 0; });
+function isMobile() {
+    return /Android|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent);
+}
 
-    if (urls.length === 0) {
-        showToast('Please paste at least one image path or URL.', 'error');
-        urlInput.focus();
-        return;
-    }
+function forceMobileUpdate() {
+    if (!isMobile()) return;
 
-    var addedCount = 0;
-    var skippedCount = 0;
-    var portfolio = DataStore.get('portfolio');
+    var lastCheck = localStorage.getItem('mobile_check');
+    var now = Date.now();
 
-    var existingUrls = {};
-    for (var i = 0; i < portfolio.length; i++) {
-        existingUrls[portfolio[i].image] = true;
-    }
+    if (!lastCheck || (now - parseInt(lastCheck)) > 300000) {
+        localStorage.setItem('mobile_check', now);
 
-    for (var j = 0; j < urls.length; j++) {
-        var url = urls[j];
-        if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('images/')) {
-            url = 'images/' + url;
+        var portfolio = localStorage.getItem('portfolio');
+        if (!portfolio || portfolio === '[]' || portfolio === 'null') {
+            console.log('📱 Mobile: No data found, reloading...');
+            window.location.reload(true);
         }
+    }
+}
 
-        if (existingUrls[url]) {
-            skippedCount++;
-            continue;
-        }
+// ========================================
+// SERVICE WORKER REGISTRATION
+// ========================================
 
-        portfolio.push({
-            id: Date.now() + j + Math.random() * 1000,
-            title: 'Image ' + (portfolio.length + addedCount + 1),
-            category: 'custom',
-            image: url,
-            description: 'Added via bulk upload'
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/js/sw.js')
+        .then(function(registration) {
+            console.log('✅ Service Worker registered');
+            registration.addEventListener('updatefound', function() {
+                console.log('🔄 Service Worker update found');
+            });
+        })
+        .catch(function(error) {
+            console.log('❌ Service Worker registration failed:', error);
         });
-        addedCount++;
-        existingUrls[url] = true;
-    }
-
-    DataStore.set('portfolio', portfolio);
-
-    var message = '✅ ' + addedCount + ' images added successfully!';
-    if (skippedCount > 0) {
-        message += ' (' + skippedCount + ' skipped - already exist)';
-    }
-    showToast(message, 'success');
-    urlInput.value = '';
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
-    updateStats();
-}
-
-// ========================================
-// CLOSE MODAL
-// ========================================
-function closeModal() {
-    var modal = document.getElementById('portfolioModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
 }
 
 // ========================================
 // MAIN INIT
 // ========================================
+
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded');
+    console.log('🚀 DOM fully loaded');
     initializeData();
     initNavigation();
     initHeroStats();
@@ -1424,20 +1522,23 @@ document.addEventListener('DOMContentLoaded', function() {
     initLightbox();
     initContactForm();
     initAdminPanel();
-    console.log('All systems initialized');
+    forceMobileUpdate();
+    console.log('✅ All systems initialized');
 });
 
 // ========================================
 // EXPOSE GLOBAL FUNCTIONS
 // ========================================
+
+window.DataStore = DataStore;
 window.showToast = showToast;
 window.closeModal = closeModal;
+window.closeViewModal = closeViewModal;
 window.openPortfolioModal = openPortfolioModal;
 window.openPackageModal = openPackageModal;
 window.editImage = editImage;
 window.deleteImage = deleteImage;
 window.viewImage = viewImage;
-window.closeViewModal = closeViewModal;
 window.editPackage = editPackage;
 window.deletePackage = deletePackage;
 window.viewSubmission = viewSubmission;
@@ -1449,8 +1550,9 @@ window.quickAddImage = quickAddImage;
 window.handleUrlUpload = handleUrlUpload;
 window.refreshGallery = refreshGallery;
 window.clearAllImages = clearAllImages;
+window.initAdminDashboard = initAdminDashboard;
 
-console.log('🚀 Mahadev Photography Website Loaded Successfully!');
+console.log('📱 Mahadev Photography v' + APP_VERSION + ' loaded!');
 console.log('📸 Admin Login: admin@mahadevphotography.com / admin123');
 console.log('📞 Contact: +91 94264 24213, +91 81608 42941');
 console.log('📧 Email: mahadevphotography1921@gmail.com');
