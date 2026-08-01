@@ -1,9 +1,9 @@
 // ========================================
 // MAHADEV PHOTOGRAPHY - COMPLETE
-// VERSION: 3.0.2 (FIXED NaN ISSUE)
+// VERSION: 3.0.3 (FIXED NaN - PROPER DATA UNWRAPPING)
 // ========================================
 
-const APP_VERSION = '3.0.2';
+const APP_VERSION = '3.0.3';
 
 // ========================================
 // FORCE CLEAR ON VERSION CHANGE
@@ -38,7 +38,7 @@ const APP_VERSION = '3.0.2';
 })();
 
 // ========================================
-// DATA STORE WITH EXPIRY
+// DATA STORE WITH EXPIRY - FIXED
 // ========================================
 
 const DataStore = {
@@ -49,14 +49,32 @@ const DataStore = {
 
             var parsed = JSON.parse(data);
 
-            if (parsed && parsed._expiry) {
-                if (Date.now() > parsed._expiry) {
-                    localStorage.removeItem(key);
-                    return defaultVal;
+            // CRITICAL FIX: Check if data is wrapped with value/expiry
+            if (parsed && typeof parsed === 'object') {
+                // If it has a 'value' property, use that
+                if (parsed.hasOwnProperty('value')) {
+                    var value = parsed.value;
+                    // If value is null or undefined, return default
+                    if (value === null || value === undefined) {
+                        return defaultVal;
+                    }
+                    return value;
                 }
-                return parsed.value || defaultVal;
+                // If it has _expiry but no value, handle gracefully
+                if (parsed.hasOwnProperty('_expiry')) {
+                    if (Date.now() > parsed._expiry) {
+                        localStorage.removeItem(key);
+                        return defaultVal;
+                    }
+                    // If we have _expiry but value is missing, return default
+                    if (!parsed.hasOwnProperty('value') || parsed.value === undefined) {
+                        return defaultVal;
+                    }
+                    return parsed.value || defaultVal;
+                }
             }
 
+            // If it's a direct array or object, return it
             return parsed || defaultVal;
         } catch (e) {
             console.error('Error reading from localStorage:', e);
@@ -66,6 +84,10 @@ const DataStore = {
 
     set: function(key, data, expiryHours = 24) {
         try {
+            // Ensure data is valid before storing
+            if (data === null || data === undefined) {
+                data = [];
+            }
             var item = {
                 value: data,
                 _expiry: Date.now() + (expiryHours * 60 * 60 * 1000)
@@ -94,7 +116,7 @@ const DataStore = {
 window.DataStore = DataStore;
 
 // ========================================
-// VALIDATE AND FIX DATA (NEW - FIXES NaN)
+// VALIDATE AND FIX DATA
 // ========================================
 
 function validateAndFixData() {
@@ -136,7 +158,7 @@ function validateAndFixData() {
         DataStore.set('portfolio', portfolio);
     }
 
-    // Fix Packages - CRITICAL for NaN fix
+    // Fix Packages
     var packages = DataStore.get('packages');
     if (!Array.isArray(packages) || packages.length === 0) {
         console.log('📦 Initializing packages with sample data...');
@@ -164,7 +186,7 @@ function validateAndFixData() {
         ];
         DataStore.set('packages', packages);
     } else {
-        // CRITICAL FIX: Validate each package has a valid price
+        // Validate each package has a valid price
         var needsUpdate = false;
         packages.forEach(function(pkg, index) {
             if (typeof pkg.price !== 'number' || isNaN(pkg.price) || pkg.price === undefined) {
@@ -187,17 +209,16 @@ function validateAndFixData() {
     }
 
     console.log('✅ Data validation complete!');
-    console.log('📸 Portfolio:', portfolio.length, 'items');
-    console.log('📦 Packages:', packages.length, 'items');
-    console.log('📩 Submissions:', submissions.length, 'items');
+    console.log('📸 Portfolio:', Array.isArray(portfolio) ? portfolio.length : 0, 'items');
+    console.log('📦 Packages:', Array.isArray(packages) ? packages.length : 0, 'items');
+    console.log('📩 Submissions:', Array.isArray(submissions) ? submissions.length : 0, 'items');
 }
 
 // ========================================
-// INITIAL DATA - ORIGINAL CATEGORIES
+// INITIAL DATA
 // ========================================
 
 function initializeData() {
-    // Use the new validation function instead of the old one
     validateAndFixData();
 }
 
@@ -457,7 +478,7 @@ function loadGalleryPreview() {
     if (!container) return;
 
     var items = DataStore.get('portfolio').slice(0, 4);
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         container.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:40px;color:#999;">No images in gallery yet. Add some in the admin panel!</p>';
         return;
     }
@@ -480,7 +501,7 @@ function loadGalleryPage() {
     if (!container) return;
 
     var items = DataStore.get('portfolio');
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         container.innerHTML = '<div class="empty-gallery-msg" style="text-align:center;padding:60px;color:#999;grid-column:1/-1;"><i class="fas fa-images" style="font-size:4rem;display:block;margin-bottom:15px;color:#ddd;"></i><p style="font-size:1.2rem;margin-bottom:10px;color:#666;">No images in gallery yet</p><p style="color:#bbb;">Check back soon for amazing photos!</p></div>';
         return;
     }
@@ -514,7 +535,7 @@ function loadPackages() {
     if (!container) return;
 
     var items = DataStore.get('packages');
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         container.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:40px;color:#999;">No packages available.</p>';
         return;
     }
@@ -522,7 +543,6 @@ function loadPackages() {
     var html = '';
     items.forEach(function(pkg) {
         var featuredClass = pkg.featured ? 'featured' : '';
-        // SAFETY CHECK: Ensure price is a valid number
         var price = typeof pkg.price === 'number' ? pkg.price : 0;
         html += '<div class="package-card ' + featuredClass + '">';
         html += '<div class="package-header">';
@@ -602,6 +622,7 @@ function initContactForm() {
                 form.reset();
 
                 var submissions = DataStore.get('submissions');
+                if (!Array.isArray(submissions)) submissions = [];
                 submissions.push({
                     id: Date.now(),
                     name: name,
@@ -666,7 +687,7 @@ function initAdminPanel() {
             return;
         }
 
-        // CRITICAL FIX: Validate data before loading admin pages
+        // Validate data before loading admin pages
         validateAndFixData();
 
         if (currentPage.indexOf('admin/index.html') !== -1 || currentPage.endsWith('/admin/')) {
@@ -716,25 +737,27 @@ function initAdminLogin() {
 }
 
 // ========================================
-// ADMIN DASHBOARD - FIXED NaN
+// ADMIN DASHBOARD - FIXED
 // ========================================
 
 function initAdminDashboard() {
     console.log('📊 Loading Dashboard...');
 
     try {
-        var portfolio = DataStore.get('portfolio', []);
-        var packages = DataStore.get('packages', []);
-        var submissions = DataStore.get('submissions', []);
+        // Get data using DataStore
+        var portfolio = DataStore.get('portfolio');
+        var packages = DataStore.get('packages');
+        var submissions = DataStore.get('submissions');
 
+        // Ensure we have valid arrays
         var portfolioCount = Array.isArray(portfolio) ? portfolio.length : 0;
         var packagesCount = Array.isArray(packages) ? packages.length : 0;
         var submissionsCount = Array.isArray(submissions) ? submissions.length : 0;
 
+        // Calculate total revenue safely
         var totalRevenue = 0;
         if (Array.isArray(packages)) {
             packages.forEach(function(pkg) {
-                // CRITICAL FIX: Safely parse price to avoid NaN
                 var price = typeof pkg.price === 'number' ? pkg.price : parseFloat(pkg.price) || 0;
                 totalRevenue += price;
             });
@@ -745,6 +768,7 @@ function initAdminDashboard() {
         console.log('📩 Submissions:', submissionsCount);
         console.log('💰 Revenue:', totalRevenue);
 
+        // Update DOM
         var statPortfolio = document.getElementById('statPortfolio');
         var statPackages = document.getElementById('statPackages');
         var statSubmissions = document.getElementById('statSubmissions');
@@ -755,6 +779,7 @@ function initAdminDashboard() {
         if (statSubmissions) statSubmissions.textContent = submissionsCount;
         if (statRevenue) statRevenue.textContent = '₹' + totalRevenue.toLocaleString();
 
+        // Recent Submissions
         var recentTable = document.getElementById('recentSubmissions');
         if (recentTable) {
             var recent = Array.isArray(submissions) ? submissions.slice(-5).reverse() : [];
@@ -828,14 +853,13 @@ function initAdminPackages() {
 
 function renderPackagesTable(table) {
     var items = DataStore.get('packages');
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         table.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">No packages added yet.</td></tr>';
         return;
     }
 
     var html = '';
     items.forEach(function(pkg) {
-        // SAFETY CHECK: Ensure price is a valid number
         var price = typeof pkg.price === 'number' ? pkg.price : 0;
         html += '<tr>';
         html += '<td><strong>' + pkg.name + '</strong></td>';
@@ -892,6 +916,7 @@ function savePackage(form) {
     }
 
     var packages = DataStore.get('packages');
+    if (!Array.isArray(packages)) packages = [];
 
     if (id) {
         var index = -1;
@@ -925,10 +950,12 @@ function savePackage(form) {
 window.editPackage = function(id) {
     var items = DataStore.get('packages');
     var pkg = null;
-    for (var i = 0; i < items.length; i++) {
-        if (items[i].id === id) {
-            pkg = items[i];
-            break;
+    if (Array.isArray(items)) {
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].id === id) {
+                pkg = items[i];
+                break;
+            }
         }
     }
     if (pkg) openPackageModal(pkg);
@@ -938,6 +965,8 @@ window.deletePackage = function(id) {
     if (!confirm('Are you sure you want to delete this package?')) return;
 
     var packages = DataStore.get('packages');
+    if (!Array.isArray(packages)) return;
+
     var newPackages = [];
     for (var i = 0; i < packages.length; i++) {
         if (packages[i].id !== id) {
@@ -963,19 +992,21 @@ function initAdminSubmissions() {
     if (markAllBtn) {
         markAllBtn.addEventListener('click', function() {
             var submissions = DataStore.get('submissions');
-            for (var i = 0; i < submissions.length; i++) {
-                submissions[i].status = 'read';
+            if (Array.isArray(submissions)) {
+                for (var i = 0; i < submissions.length; i++) {
+                    submissions[i].status = 'read';
+                }
+                DataStore.set('submissions', submissions);
+                renderSubmissionsTable(table);
+                showToast('All submissions marked as read.', 'success');
             }
-            DataStore.set('submissions', submissions);
-            renderSubmissionsTable(table);
-            showToast('All submissions marked as read.', 'success');
         });
     }
 }
 
 function renderSubmissionsTable(table) {
     var items = DataStore.get('submissions');
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         table.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:40px;">No submissions yet.</td></tr>';
         return;
     }
@@ -1004,10 +1035,12 @@ function renderSubmissionsTable(table) {
 window.viewSubmission = function(id) {
     var items = DataStore.get('submissions');
     var sub = null;
-    for (var i = 0; i < items.length; i++) {
-        if (items[i].id === id) {
-            sub = items[i];
-            break;
+    if (Array.isArray(items)) {
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].id === id) {
+                sub = items[i];
+                break;
+            }
         }
     }
     if (!sub) return;
@@ -1016,35 +1049,39 @@ window.viewSubmission = function(id) {
 
     if (sub.status === 'new') {
         var submissions = DataStore.get('submissions');
-        var index = -1;
-        for (var j = 0; j < submissions.length; j++) {
-            if (submissions[j].id === id) {
-                index = j;
-                break;
+        if (Array.isArray(submissions)) {
+            var index = -1;
+            for (var j = 0; j < submissions.length; j++) {
+                if (submissions[j].id === id) {
+                    index = j;
+                    break;
+                }
             }
-        }
-        if (index !== -1) {
-            submissions[index].status = 'read';
-            DataStore.set('submissions', submissions);
-            renderSubmissionsTable(document.getElementById('submissionsTable'));
+            if (index !== -1) {
+                submissions[index].status = 'read';
+                DataStore.set('submissions', submissions);
+                renderSubmissionsTable(document.getElementById('submissionsTable'));
+            }
         }
     }
 };
 
 window.markRead = function(id) {
     var submissions = DataStore.get('submissions');
-    var index = -1;
-    for (var i = 0; i < submissions.length; i++) {
-        if (submissions[i].id === id) {
-            index = i;
-            break;
+    if (Array.isArray(submissions)) {
+        var index = -1;
+        for (var i = 0; i < submissions.length; i++) {
+            if (submissions[i].id === id) {
+                index = i;
+                break;
+            }
         }
-    }
-    if (index !== -1) {
-        submissions[index].status = 'read';
-        DataStore.set('submissions', submissions);
-        showToast('Marked as read.', 'success');
-        renderSubmissionsTable(document.getElementById('submissionsTable'));
+        if (index !== -1) {
+            submissions[index].status = 'read';
+            DataStore.set('submissions', submissions);
+            showToast('Marked as read.', 'success');
+            renderSubmissionsTable(document.getElementById('submissionsTable'));
+        }
     }
 };
 
@@ -1052,6 +1089,8 @@ window.deleteSubmission = function(id) {
     if (!confirm('Delete this submission?')) return;
 
     var submissions = DataStore.get('submissions');
+    if (!Array.isArray(submissions)) return;
+
     var newSubmissions = [];
     for (var i = 0; i < submissions.length; i++) {
         if (submissions[i].id !== id) {
@@ -1073,13 +1112,11 @@ function initAdminGallery() {
     renderAdminGallery(document.getElementById('adminGalleryGrid'));
     updateStats();
 
-    // Quick Add Button
     var addBtn = document.getElementById('quickAddBtn');
     if (addBtn) {
         addBtn.addEventListener('click', quickAddImage);
     }
 
-    // Modal close
     var modalClose = document.querySelector('.modal-close');
     if (modalClose) {
         modalClose.addEventListener('click', closeModal);
@@ -1094,20 +1131,17 @@ function initAdminGallery() {
         });
     }
 
-    // Bulk Upload
     var bulkBtn = document.querySelector('.btn-bulk');
     if (bulkBtn) {
         bulkBtn.addEventListener('click', handleUrlUpload);
     }
 
-    // Preview functionality
     var quickUrlInput = document.getElementById('quickImageUrl');
     var quickPreview = document.getElementById('quickPreview');
 
     if (quickUrlInput && quickPreview) {
         quickUrlInput.addEventListener('input', function() {
             var url = this.value.trim();
-
             if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
                 var img = new Image();
                 img.onload = function() {
@@ -1126,7 +1160,6 @@ function initAdminGallery() {
         });
     }
 
-    // Enter key support
     if (quickUrlInput) {
         quickUrlInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -1136,7 +1169,6 @@ function initAdminGallery() {
         });
     }
 
-    // Modal form submit
     var modalForm = document.getElementById('portfolioForm');
     if (modalForm) {
         modalForm.addEventListener('submit', function(e) {
@@ -1191,10 +1223,6 @@ function renderAdminGallery(container) {
     updateStats();
 }
 
-// ========================================
-// UPDATE STATS - ORIGINAL CATEGORIES
-// ========================================
-
 function updateStats() {
     var items = DataStore.get('portfolio');
     var count = items ? items.length : 0;
@@ -1226,10 +1254,6 @@ function updateStats() {
     if (natureEl) natureEl.textContent = natureCount;
 }
 
-// ========================================
-// GALLERY CRUD OPERATIONS
-// ========================================
-
 window.quickAddImage = function() {
     console.log('Quick Add triggered');
     var urlInput = document.getElementById('quickImageUrl');
@@ -1254,7 +1278,7 @@ window.quickAddImage = function() {
     }
 
     var portfolio = DataStore.get('portfolio');
-    if (!portfolio) portfolio = [];
+    if (!Array.isArray(portfolio)) portfolio = [];
 
     var exists = false;
     for (var i = 0; i < portfolio.length; i++) {
@@ -1313,7 +1337,7 @@ window.handleUrlUpload = function() {
     }
 
     var portfolio = DataStore.get('portfolio');
-    if (!portfolio) portfolio = [];
+    if (!Array.isArray(portfolio)) portfolio = [];
 
     var addedCount = 0;
     var skippedCount = 0;
@@ -1412,7 +1436,7 @@ window.deleteImage = function(id) {
     if (!confirm('Are you sure you want to delete this image?')) return;
 
     var portfolio = DataStore.get('portfolio');
-    if (!portfolio) return;
+    if (!Array.isArray(portfolio)) return;
 
     var newPortfolio = [];
     for (var i = 0; i < portfolio.length; i++) {
@@ -1493,15 +1517,13 @@ function savePortfolio(form) {
     var image = document.getElementById('portImage').value.trim();
     var description = document.getElementById('portDescription').value.trim();
 
-    console.log('ID:', id, 'Title:', title, 'Category:', category, 'Description:', description);
-
     if (!title || !category || !image) {
         showToast('Please fill in all fields.', 'error');
         return;
     }
 
     var portfolio = DataStore.get('portfolio');
-    if (!portfolio) portfolio = [];
+    if (!Array.isArray(portfolio)) portfolio = [];
 
     if (id) {
         var found = false;
@@ -1515,7 +1537,6 @@ function savePortfolio(form) {
                     description: description || ''
                 };
                 found = true;
-                console.log('✅ Updated item at index:', i, portfolio[i]);
                 break;
             }
         }
@@ -1538,91 +1559,11 @@ function savePortfolio(form) {
         };
         portfolio.push(newItem);
         DataStore.set('portfolio', portfolio);
-        console.log('✅ Added new item:', newItem);
         showToast('✅ Image added successfully!', 'success');
         closeModal();
         renderAdminGallery(document.getElementById('adminGalleryGrid'));
     }
 }
-
-// ========================================
-// PREVIEW ON INPUT
-// ========================================
-document.addEventListener('DOMContentLoaded', function() {
-    // Preview for quick add
-    var urlInput = document.getElementById('quickImageUrl');
-    var preview = document.getElementById('quickPreview');
-
-    if (urlInput && preview) {
-        urlInput.addEventListener('input', function() {
-            var url = this.value.trim();
-            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-                preview.innerHTML = '<img src="' + url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div style=\'color:#e74c3c;padding:20px;\'><i class=\'fas fa-exclamation-triangle\' style=\'font-size:2rem;display:block;margin-bottom:10px;\'></i><p>Cannot preview image</p><small>' + url + '</small></div>\'">';
-                preview.classList.add('has-preview');
-            } else {
-                preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small style="color:#555;">Enter a URL above</small></div>';
-                preview.classList.remove('has-preview');
-            }
-        });
-    }
-
-    // Preview for modal
-    var modalImageInput = document.getElementById('portImage');
-    var modalPreview = document.getElementById('modalPreview');
-
-    if (modalImageInput && modalPreview) {
-        modalImageInput.addEventListener('input', function() {
-            var url = this.value.trim();
-            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-                modalPreview.innerHTML = '<img src="' + url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'><i class=\\\'fas fa-image\\\'></i> Image not found</div>\'">';
-            } else {
-                modalPreview.innerHTML = '<div class="no-preview"><i class="fas fa-image"></i> No image preview</div>';
-            }
-        });
-    }
-
-    // Form submit
-    var form = document.getElementById('portfolioForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            savePortfolio(this);
-        });
-    }
-
-    // Initial render
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
-
-    console.log('✅ Gallery loaded successfully!');
-});
-
-// ========================================
-// CLOSE MODAL ON CLICK OUTSIDE
-// ========================================
-document.addEventListener('click', function(e) {
-    var modal = document.getElementById('portfolioModal');
-    if (modal && modal.classList.contains('active')) {
-        if (e.target === modal) {
-            closeModal();
-        }
-    }
-    var viewModal = document.getElementById('viewModal');
-    if (viewModal && viewModal.classList.contains('active')) {
-        if (e.target === viewModal) {
-            closeViewModal();
-        }
-    }
-});
-
-// ========================================
-// ESCAPE KEY TO CLOSE
-// ========================================
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeModal();
-        closeViewModal();
-    }
-});
 
 // ========================================
 // MOBILE FORCE RELOAD
