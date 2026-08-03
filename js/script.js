@@ -711,6 +711,36 @@ function initAdminPanel() {
 }
 
 // ========================================
+// DATA STORE - FIXED
+// ========================================
+
+const DataStore = {
+    get: function(key, defaultVal = []) {
+        try {
+            var data = localStorage.getItem(key);
+            if (data) {
+                return JSON.parse(data);
+            }
+            return defaultVal;
+        } catch (e) {
+            console.error('Error reading from localStorage:', e);
+            return defaultVal;
+        }
+    },
+    set: function(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+            return true;
+        } catch (e) {
+            console.error('Error saving to localStorage:', e);
+            return false;
+        }
+    }
+};
+
+// Make it global
+window.DataStore = DataStore;
+// ========================================
 // ADMIN LOGIN
 // ========================================
 

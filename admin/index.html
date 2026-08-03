@@ -9,19 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Additional Dashboard Styles */
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
-            display: block;
-        }
-        
-        .stat-label {
-            color: #b8b8b8;
-            font-size: 0.9rem;
-            font-weight: 500;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
         .stat-card {
@@ -153,19 +145,11 @@
             color: #D4AF37;
             margin-right: 10px;
         }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
     </style>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
         <aside class="admin-sidebar">
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-camera"></i></div>
@@ -181,7 +165,6 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="admin-main">
             <div class="admin-header">
                 <h1><i class="fas fa-dashboard"></i> Dashboard</h1>
@@ -194,7 +177,6 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon blue"><i class="fas fa-images"></i></div>
@@ -218,7 +200,6 @@
                 </div>
             </div>
 
-            <!-- Recent Submissions -->
             <div class="admin-table-wrapper">
                 <div class="table-header">
                     <h3><i class="fas fa-clock"></i> Recent Submissions</h3>
@@ -233,9 +214,7 @@
                             <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody id="recentSubmissions">
-                        <!-- Loaded dynamically -->
-                    </tbody>
+                    <tbody id="recentSubmissions"></tbody>
                 </table>
             </div>
         </main>
@@ -251,43 +230,85 @@
             console.log('📊 Loading Dashboard...');
 
             try {
-                // Get data from localStorage
-                var portfolio = DataStore.get('portfolio') || [];
-                var packages = DataStore.get('packages') || [];
-                var submissions = DataStore.get('submissions') || [];
+                // Get data from localStorage with safe defaults
+                var portfolio = [];
+                var packages = [];
+                var submissions = [];
 
-                // Counts
-                var portfolioCount = portfolio.length;
-                var packagesCount = packages.length;
-                var submissionsCount = submissions.length;
+                try {
+                    portfolio = DataStore.get('portfolio') || [];
+                } catch (e) {
+                    console.error('Error loading portfolio:', e);
+                    portfolio = [];
+                }
+
+                try {
+                    packages = DataStore.get('packages') || [];
+                } catch (e) {
+                    console.error('Error loading packages:', e);
+                    packages = [];
+                }
+
+                try {
+                    submissions = DataStore.get('submissions') || [];
+                } catch (e) {
+                    console.error('Error loading submissions:', e);
+                    submissions = [];
+                }
+
+                // Ensure they are arrays
+                if (!Array.isArray(portfolio)) portfolio = [];
+                if (!Array.isArray(packages)) packages = [];
+                if (!Array.isArray(submissions)) submissions = [];
+
+                // Get counts (always numbers)
+                var portfolioCount = portfolio.length || 0;
+                var packagesCount = packages.length || 0;
+                var submissionsCount = submissions.length || 0;
 
                 // Calculate total revenue
                 var totalRevenue = 0;
-                packages.forEach(function(pkg) {
-                    var price = parseFloat(pkg.price) || 0;
-                    totalRevenue += price;
-                });
+                if (Array.isArray(packages)) {
+                    packages.forEach(function(pkg) {
+                        var price = parseFloat(pkg.price);
+                        if (!isNaN(price) && price > 0) {
+                            totalRevenue += price;
+                        }
+                    });
+                }
 
                 console.log('📸 Portfolio:', portfolioCount);
                 console.log('📦 Packages:', packagesCount);
                 console.log('📩 Submissions:', submissionsCount);
                 console.log('💰 Revenue:', totalRevenue);
 
-                // Update stats using IDs
+                // Update stats - using direct ID references
                 var statPortfolio = document.getElementById('statPortfolio');
                 var statPackages = document.getElementById('statPackages');
                 var statSubmissions = document.getElementById('statSubmissions');
                 var statRevenue = document.getElementById('statRevenue');
 
-                if (statPortfolio) statPortfolio.textContent = portfolioCount;
-                if (statPackages) statPackages.textContent = packagesCount;
-                if (statSubmissions) statSubmissions.textContent = submissionsCount;
-                if (statRevenue) statRevenue.textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+                if (statPortfolio) {
+                    statPortfolio.textContent = portfolioCount;
+                    console.log('✅ Portfolio updated to:', portfolioCount);
+                }
+                if (statPackages) {
+                    statPackages.textContent = packagesCount;
+                    console.log('✅ Packages updated to:', packagesCount);
+                }
+                if (statSubmissions) {
+                    statSubmissions.textContent = submissionsCount;
+                    console.log('✅ Submissions updated to:', submissionsCount);
+                }
+                if (statRevenue) {
+                    statRevenue.textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+                    console.log('✅ Revenue updated to:', totalRevenue);
+                }
 
-                // Recent Submissions (last 5)
+                // Recent Submissions
                 var recentTable = document.getElementById('recentSubmissions');
                 if (recentTable) {
-                    var recent = submissions.slice(-5).reverse();
+                    var recent = Array.isArray(submissions) ? submissions.slice(-5).reverse() : [];
 
                     if (recent.length === 0) {
                         recentTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:30px;">No submissions yet.</td></tr>';
@@ -297,10 +318,12 @@
                             var statusText = s.status || 'new';
                             var statusClass = statusText === 'new' ? 'badge-new' : 'badge-read';
                             var dateText = s.date || new Date().toLocaleString();
+                            var name = s.name || 'Unknown';
+                            var email = s.email || 'N/A';
 
                             html += '<tr>';
-                            html += '<td><strong>' + (s.name || 'Unknown') + '</strong></td>';
-                            html += '<td>' + (s.email || 'N/A') + '</td>';
+                            html += '<td><strong>' + name + '</strong></td>';
+                            html += '<td>' + email + '</td>';
                             html += '<td><span class="badge ' + statusClass + '">' + statusText + '</span></td>';
                             html += '<td style="color:#888;">' + dateText + '</td>';
                             html += '</tr>';
@@ -313,37 +336,76 @@
 
             } catch (error) {
                 console.error('❌ Dashboard Error:', error);
-                showToast('Error loading dashboard data.', 'error');
+                // Show error but don't break
+                showToast('Error loading dashboard data. Please refresh.', 'error');
             }
         }
 
         // ========================================
-        // INITIALIZE ON PAGE LOAD
+        // FALLBACK: Direct localStorage access if DataStore fails
+        // ========================================
+        function getDataDirect(key) {
+            try {
+                var data = localStorage.getItem(key);
+                if (data) {
+                    return JSON.parse(data);
+                }
+                return [];
+            } catch (e) {
+                console.error('Error reading from localStorage:', e);
+                return [];
+            }
+        }
+
+        // ========================================
+        // INITIALIZE
         // ========================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📊 Dashboard Page Loaded');
 
             // Check if user is authenticated
-            if (!isAuthenticated()) {
+            if (typeof isAuthenticated === 'function' && !isAuthenticated()) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Initialize dashboard
-            if (typeof initAdminDashboard === 'function') {
-                initAdminDashboard();
-            } else {
-                console.error('initAdminDashboard function not found!');
-                // Fallback: define the function here
-                initAdminDashboard();
-            }
+            // Wait for DataStore to be ready
+            setTimeout(function() {
+                // If DataStore is not available, use direct localStorage
+                if (typeof DataStore === 'undefined') {
+                    console.warn('DataStore not found, using direct localStorage');
+                    // Create temporary DataStore
+                    window.DataStore = {
+                        get: function(key, defaultVal) {
+                            try {
+                                var data = localStorage.getItem(key);
+                                return data ? JSON.parse(data) : (defaultVal || []);
+                            } catch (e) {
+                                return defaultVal || [];
+                            }
+                        }
+                    };
+                }
+
+                // Initialize dashboard
+                if (typeof initAdminDashboard === 'function') {
+                    initAdminDashboard();
+                } else {
+                    console.error('initAdminDashboard function not found!');
+                }
+            }, 100);
 
             // Logout button
             var logoutBtn = document.querySelector('.logout');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    logoutAdmin();
+                    if (typeof logoutAdmin === 'function') {
+                        logoutAdmin();
+                    } else {
+                        localStorage.removeItem('adminAuth');
+                        window.location.href = '../index.html';
+                    }
                 });
             }
 
@@ -352,6 +414,7 @@
 
         // Expose functions globally
         window.initAdminDashboard = initAdminDashboard;
+        window.getDataDirect = getDataDirect;
     </script>
 </body>
 
