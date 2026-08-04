@@ -13,7 +13,23 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="../js/firebase-config.js"></script>
+
+    <!-- Firebase Config -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0oQ5jckK83kCPpYpQRqCtg1POW1Wr83k",
+            authDomain: "mahadev-photography.firebaseapp.com",
+            projectId: "mahadev-photography",
+            storageBucket: "mahadev-photography.firebasestorage.app",
+            messagingSenderId: "584518739767",
+            appId: "1:584518739767:web:64d7461ba46dba83d85cb2",
+            measurementId: "G-1G5YDP7M4D"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        console.log('🔥 Firebase initialized!');
+    </script>
 
     <style>
         /* ========================================
@@ -23,7 +39,6 @@
         .gallery-container {
             padding: 20px 0;
         }
-        /* Stats Bar */
         
         .gallery-stats {
             display: grid;
@@ -94,7 +109,6 @@
             font-size: 0.85rem;
             font-weight: 500;
         }
-        /* Add Image Section */
         
         .add-image-section {
             background: #1a1a1a;
@@ -230,7 +244,7 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
         }
-        /* Firebase Upload Section */
+        /* Firebase Upload Section - Updated */
         
         .firebase-upload-section {
             background: rgba(46, 204, 113, 0.05);
@@ -242,7 +256,7 @@
         
         .firebase-upload-section .btn-firebase {
             background: linear-gradient(135deg, #2ecc71, #27ae60);
-            padding: 12px 30px;
+            padding: 14px 35px;
             font-size: 1rem;
             border: none;
             border-radius: 8px;
@@ -266,9 +280,24 @@
         #firebaseStatus {
             margin-top: 10px;
             font-weight: 600;
-            color: #27ae60;
+            padding: 8px 12px;
+            border-radius: 6px;
         }
-        /* Bulk Upload */
+        
+        #firebaseStatus.success {
+            color: #27ae60;
+            background: rgba(46, 204, 113, 0.1);
+        }
+        
+        #firebaseStatus.error {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        #firebaseStatus.loading {
+            color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
         
         .bulk-upload-section {
             background: #1a1a1a;
@@ -339,7 +368,6 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
         }
-        /* Gallery Grid */
         
         .gallery-grid-header {
             display: flex;
@@ -618,7 +646,6 @@
             color: #666;
             font-size: 1rem;
         }
-        /* Modal */
         
         .modal {
             display: none;
@@ -921,7 +948,6 @@
             color: #D4AF37;
             margin-right: 12px;
         }
-        /* Responsive */
         
         @media (max-width: 992px) {
             .add-image-grid {
@@ -1043,8 +1069,11 @@
                         <i class="fas fa-plus-circle"></i> Add New Image
                     </div>
 
-                    <!-- Firebase Upload -->
+                    <!-- Firebase Upload - Updated with 15MB limit -->
                     <div class="firebase-upload-section">
+                        <p style="color:#b8b8b8;font-size:0.85rem;margin-bottom:10px;">
+                            <i class="fas fa-info-circle"></i> Max file size: <strong>15 MB</strong> (JPG, PNG, WebP, GIF)
+                        </p>
                         <input type="file" id="firebaseImageInput" accept="image/*" style="display:none;" onchange="uploadToFirebase(this.files[0])">
                         <button class="btn-firebase" onclick="document.getElementById('firebaseImageInput').click()">
                             <i class="fas fa-cloud-upload-alt"></i> Upload to Firebase
@@ -1184,14 +1213,117 @@
         </div>
     </div>
 
-    <script src="../js/script.js"></script>
     <script>
         // ========================================
         // ADMIN GALLERY - FIREBASE INTEGRATED
         // ========================================
 
-        var currentFilter = 'all';
-        var isLoading = false;
+        // ========================================
+        // DATA STORE - FIREBASE
+        // ========================================
+        const DataStore = {
+            get: async function(key, defaultVal = []) {
+                try {
+                    const collectionMap = {
+                        'portfolio': 'gallery',
+                        'packages': 'packages',
+                        'submissions': 'submissions'
+                    };
+                    const collectionName = collectionMap[key] || key;
+                    const snapshot = await db.collection(collectionName).orderBy('createdAt', 'desc').get();
+
+                    if (snapshot.empty) return defaultVal;
+
+                    const items = [];
+                    snapshot.forEach(doc => {
+                        items.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    return items;
+                } catch (error) {
+                    console.error('Firebase get error:', error);
+                    // Fallback to localStorage
+                    try {
+                        const data = localStorage.getItem(key);
+                        return data ? JSON.parse(data) : defaultVal;
+                    } catch (e) {
+                        return defaultVal;
+                    }
+                }
+            },
+            set: async function(key, data) {
+                try {
+                    const collectionMap = {
+                        'portfolio': 'gallery',
+                        'packages': 'packages',
+                        'submissions': 'submissions'
+                    };
+                    const collectionName = collectionMap[key] || key;
+
+                    for (const item of data) {
+                        if (item.id) {
+                            const docRef = db.collection(collectionName).doc(String(item.id));
+                            const docSnap = await docRef.get();
+                            if (docSnap.exists) {
+                                await docRef.update({
+                                    ...item,
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            } else {
+                                await docRef.set({
+                                    ...item,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        } else {
+                            const docRef = db.collection(collectionName).doc();
+                            await docRef.set({
+                                ...item,
+                                id: docRef.id,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('Firebase set error:', error);
+                    // Fallback to localStorage
+                    try {
+                        localStorage.setItem(key, JSON.stringify(data));
+                        return true;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+            }
+        };
+
+        // ========================================
+        // TOAST NOTIFICATION
+        // ========================================
+        function showToast(message, type) {
+            if (type === undefined) type = 'info';
+            var existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            var icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
+            document.body.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100px)';
+                setTimeout(function() {
+                    toast.remove();
+                }, 500);
+            }, 4000);
+        }
 
         // ========================================
         // RENDER GALLERY
@@ -1220,9 +1352,8 @@
                 items.forEach(function(item, index) {
                     var imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
                     var displayDescription = item.description || '';
-                    var categoryClass = 'category-' + (item.category || 'custom');
 
-                    html += '<div class="gallery-card ' + categoryClass + '">';
+                    html += '<div class="gallery-card">';
                     html += '<div class="image-wrapper">';
                     html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
                     html += '<div class="image-overlay">';
@@ -1286,6 +1417,96 @@
                 console.error('Error updating stats:', error);
             }
         }
+
+        // ========================================
+        // FIREBASE IMAGE UPLOAD - 15MB LIMIT
+        // ========================================
+        window.uploadToFirebase = function(file) {
+            if (!file) {
+                showToast('Please select a file.', 'error');
+                return;
+            }
+
+            // Check file size - 15MB limit
+            if (file.size > 15 * 1024 * 1024) {
+                showToast('File too large. Maximum size is 15MB.', 'error');
+                var statusEl = document.getElementById('firebaseStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = '❌ File too large. Max 15MB.';
+                    statusEl.className = 'error';
+                }
+                // Reset input
+                document.getElementById('firebaseImageInput').value = '';
+                return;
+            }
+
+            var statusEl = document.getElementById('firebaseStatus');
+            if (statusEl) {
+                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Firebase...';
+                statusEl.className = 'loading';
+            }
+
+            var btn = document.querySelector('.btn-firebase');
+            if (btn) btn.disabled = true;
+
+            // Create a unique filename
+            var fileName = 'gallery/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+            var uploadTask = storage.ref(fileName).put(file);
+
+            uploadTask.on('state_changed',
+                function(snapshot) {
+                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    if (statusEl) {
+                        statusEl.innerHTML = 'Uploading: ' + Math.round(progress) + '%';
+                    }
+                },
+                function(error) {
+                    console.error('Upload error:', error);
+                    if (statusEl) {
+                        statusEl.innerHTML = '❌ Upload failed: ' + error.message;
+                        statusEl.className = 'error';
+                    }
+                    if (btn) btn.disabled = false;
+                    showToast('❌ Upload failed: ' + error.message, 'error');
+                    document.getElementById('firebaseImageInput').value = '';
+                },
+                function() {
+                    // Upload completed successfully
+                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        // Auto-fill the URL field
+                        var urlInput = document.getElementById('quickImageUrl');
+                        if (urlInput) {
+                            urlInput.value = downloadURL;
+                        }
+
+                        // Show preview
+                        var preview = document.getElementById('quickPreview');
+                        if (preview) {
+                            preview.innerHTML = '<img src="' + downloadURL + '" alt="Preview" style="max-width:100%;max-height:250px;border-radius:8px;">';
+                            preview.classList.add('has-preview');
+                        }
+
+                        if (statusEl) {
+                            statusEl.innerHTML = '✅ Uploaded successfully! URL added to field.';
+                            statusEl.className = 'success';
+                        }
+
+                        if (btn) btn.disabled = false;
+                        showToast('✅ Image uploaded to Firebase!', 'success');
+                        document.getElementById('firebaseImageInput').value = '';
+                    }).catch(function(error) {
+                        console.error('Get download URL error:', error);
+                        if (statusEl) {
+                            statusEl.innerHTML = '❌ Error getting image URL';
+                            statusEl.className = 'error';
+                        }
+                        if (btn) btn.disabled = false;
+                        showToast('❌ Error getting image URL', 'error');
+                        document.getElementById('firebaseImageInput').value = '';
+                    });
+                }
+            );
+        };
 
         // ========================================
         // QUICK ADD IMAGE
@@ -1353,86 +1574,6 @@
             }
 
             await renderAdminGallery();
-        };
-
-        // ========================================
-        // FIREBASE IMAGE UPLOAD
-        // ========================================
-        window.uploadToFirebase = function(file) {
-            if (!file) {
-                showToast('Please select a file.', 'error');
-                return;
-            }
-
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('File too large. Max 5MB.', 'error');
-                return;
-            }
-
-            var statusEl = document.getElementById('firebaseStatus');
-            if (statusEl) {
-                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Firebase...';
-                statusEl.style.color = '#3498db';
-            }
-
-            var btn = document.querySelector('.btn-firebase');
-            if (btn) btn.disabled = true;
-
-            // Create a unique filename
-            var fileName = 'gallery/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-            var uploadTask = storage.ref(fileName).put(file);
-
-            uploadTask.on('state_changed',
-                function(snapshot) {
-                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    if (statusEl) {
-                        statusEl.innerHTML = 'Uploading: ' + Math.round(progress) + '%';
-                    }
-                },
-                function(error) {
-                    console.error('Upload error:', error);
-                    if (statusEl) {
-                        statusEl.innerHTML = '❌ Upload failed: ' + error.message;
-                        statusEl.style.color = '#e74c3c';
-                    }
-                    if (btn) btn.disabled = false;
-                    showToast('❌ Upload failed: ' + error.message, 'error');
-                },
-                function() {
-                    // Upload completed successfully
-                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                        // Auto-fill the URL field
-                        var urlInput = document.getElementById('quickImageUrl');
-                        if (urlInput) {
-                            urlInput.value = downloadURL;
-                        }
-
-                        // Show preview
-                        var preview = document.getElementById('quickPreview');
-                        if (preview) {
-                            preview.innerHTML = '<img src="' + downloadURL + '" alt="Preview" style="max-width:100%;max-height:250px;border-radius:8px;">';
-                            preview.classList.add('has-preview');
-                        }
-
-                        if (statusEl) {
-                            statusEl.innerHTML = '✅ Uploaded successfully! URL added to field.';
-                            statusEl.style.color = '#27ae60';
-                        }
-
-                        if (btn) btn.disabled = false;
-                        showToast('✅ Image uploaded to Firebase!', 'success');
-                    }).catch(function(error) {
-                        console.error('Get download URL error:', error);
-                        if (statusEl) {
-                            statusEl.innerHTML = '❌ Error getting image URL';
-                            statusEl.style.color = '#e74c3c';
-                        }
-                        if (btn) btn.disabled = false;
-                        showToast('❌ Error getting image URL', 'error');
-                    });
-                }
-            );
         };
 
         // ========================================
@@ -1673,12 +1814,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📸 Admin Gallery - Firebase Version');
             console.log('🔥 Firebase Status:', typeof firebase !== 'undefined' ? 'Connected' : 'Not connected');
-
-            // Check authentication
-            if (typeof isAuthenticated === 'function' && !isAuthenticated()) {
-                window.location.href = 'login.html';
-                return;
-            }
+            console.log('📁 Storage: mahadev-photography.firebasestorage.app');
+            console.log('📊 Max file size: 15MB');
 
             // Initialize gallery
             renderAdminGallery();
@@ -1715,12 +1852,8 @@
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    if (typeof logoutAdmin === 'function') {
-                        logoutAdmin();
-                    } else {
-                        localStorage.removeItem('adminAuth');
-                        window.location.href = '../index.html';
-                    }
+                    localStorage.removeItem('adminAuth');
+                    window.location.href = '../index.html';
                 });
             }
 
@@ -1744,8 +1877,8 @@
         window.refreshGallery = refreshGallery;
         window.clearAllImages = clearAllImages;
         window.savePortfolio = savePortfolio;
-        window.DataStore = DataStore;
         window.showToast = showToast;
+        window.DataStore = DataStore;
     </script>
 </body>
 
