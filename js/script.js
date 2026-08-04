@@ -1,217 +1,213 @@
 // ========================================
-// MAHADEV PHOTOGRAPHY - COMPLETE
-// VERSION: 3.0.3 (FIXED NaN - PROPER DATA UNWRAPPING)
+// MAHADEV PHOTOGRAPHY - FIREBASE VERSION
+// VERSION: 6.0.0
 // ========================================
 
-const APP_VERSION = '3.0.3';
+const APP_VERSION = '6.0.0';
 
 // ========================================
-// FORCE CLEAR ON VERSION CHANGE
+// CHECK FIREBASE STATUS
 // ========================================
 
-(function() {
-    console.log('🚀 Mahadev Photography v' + APP_VERSION);
-
-    var storedVersion = localStorage.getItem('mahadev_version');
-
-    if (storedVersion !== APP_VERSION) {
-        console.log('🔄 New version detected! Clearing cache...');
-
-        var keepKeys = ['adminAuth'];
-        var allKeys = Object.keys(localStorage);
-
-        allKeys.forEach(function(key) {
-            if (keepKeys.indexOf(key) === -1) {
-                localStorage.removeItem(key);
-            }
-        });
-
-        localStorage.setItem('mahadev_version', APP_VERSION);
-        console.log('✅ Cache cleared!');
-
-        if (performance.navigation.type !== 1) {
-            setTimeout(function() {
-                window.location.reload(true);
-            }, 500);
-        }
-    }
-})();
+const useFirebase = typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0;
+console.log('🔥 Firebase status:', useFirebase ? 'Connected ✅' : 'Not connected ❌');
 
 // ========================================
-// DATA STORE WITH EXPIRY - FIXED
+// DATA STORE - FIREBASE + LOCALSTORAGE
 // ========================================
 
 const DataStore = {
-    get: function(key, defaultVal = []) {
-        try {
-            var data = localStorage.getItem(key);
-            if (!data) return defaultVal;
+    // GET data from Firebase or localStorage
+    get: async function(key, defaultVal = []) {
+        if (useFirebase) {
+            try {
+                // Map local keys to Firestore collection names
+                const collectionMap = {
+                    'portfolio': 'gallery',
+                    'packages': 'packages',
+                    'submissions': 'submissions'
+                };
 
-            var parsed = JSON.parse(data);
+                const collectionName = collectionMap[key] || key;
+                const snapshot = await db.collection(collectionName).orderBy('createdAt', 'desc').get();
 
-            // CRITICAL FIX: Check if data is wrapped with value/expiry
-            if (parsed && typeof parsed === 'object') {
-                // If it has a 'value' property, use that
-                if (parsed.hasOwnProperty('value')) {
-                    var value = parsed.value;
-                    // If value is null or undefined, return default
-                    if (value === null || value === undefined) {
-                        return defaultVal;
-                    }
-                    return value;
+                if (snapshot.empty) {
+                    console.log('📭 No data in Firebase for:', collectionName);
+                    return defaultVal;
                 }
-                // If it has _expiry but no value, handle gracefully
-                if (parsed.hasOwnProperty('_expiry')) {
-                    if (Date.now() > parsed._expiry) {
-                        localStorage.removeItem(key);
-                        return defaultVal;
-                    }
-                    // If we have _expiry but value is missing, return default
-                    if (!parsed.hasOwnProperty('value') || parsed.value === undefined) {
-                        return defaultVal;
-                    }
-                    return parsed.value || defaultVal;
-                }
+
+                const items = [];
+                snapshot.forEach(doc => {
+                    items.push({ id: doc.id, ...doc.data() });
+                });
+
+                console.log('🔥 Firebase loaded:', collectionName, items.length);
+                return items;
+            } catch (error) {
+                console.error('Firebase get error:', error);
+                // Fallback to localStorage
+                return this.getLocal(key, defaultVal);
             }
+        } else {
+            console.log('💾 Using localStorage fallback');
+            return this.getLocal(key, defaultVal);
+        }
+    },
 
-            // If it's a direct array or object, return it
-            return parsed || defaultVal;
+    // SET data to Firebase or localStorage
+    set: async function(key, data) {
+        if (useFirebase) {
+            try {
+                const collectionMap = {
+                    'portfolio': 'gallery',
+                    'packages': 'packages',
+                    'submissions': 'submissions'
+                };
+
+                const collectionName = collectionMap[key] || key;
+
+                // For each item, save to Firestore
+                for (const item of data) {
+                    // If item has an id, use it, otherwise create new
+                    if (item.id) {
+                        // Check if document exists
+                        const docRef = db.collection(collectionName).doc(String(item.id));
+                        const docSnap = await docRef.get();
+
+                        if (docSnap.exists) {
+                            // Update existing
+                            await docRef.update({
+                                ...item,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        } else {
+                            // Create new with same ID
+                            await docRef.set({
+                                ...item,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    } else {
+                        // Generate a new ID
+                        const docRef = db.collection(collectionName).doc();
+                        await docRef.set({
+                            ...item,
+                            id: docRef.id,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+
+                console.log('🔥 Firebase saved:', collectionName, data.length);
+                return true;
+            } catch (error) {
+                console.error('Firebase set error:', error);
+                // Fallback to localStorage
+                return this.setLocal(key, data);
+            }
+        } else {
+            return this.setLocal(key, data);
+        }
+    },
+
+    // LocalStorage methods (fallback)
+    getLocal: function(key, defaultVal = []) {
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : defaultVal;
         } catch (e) {
-            console.error('Error reading from localStorage:', e);
+            console.error('LocalStorage get error:', e);
             return defaultVal;
         }
     },
 
-    set: function(key, data, expiryHours = 24) {
+    setLocal: function(key, data) {
         try {
-            // Ensure data is valid before storing
-            if (data === null || data === undefined) {
-                data = [];
-            }
-            var item = {
-                value: data,
-                _expiry: Date.now() + (expiryHours * 60 * 60 * 1000)
-            };
-            localStorage.setItem(key, JSON.stringify(item));
+            localStorage.setItem(key, JSON.stringify(data));
             return true;
         } catch (e) {
-            console.error('Error saving to localStorage:', e);
+            console.error('LocalStorage set error:', e);
             return false;
         }
     },
 
-    clear: function() {
-        var keepKeys = ['adminAuth', 'mahadev_version'];
-        var allKeys = Object.keys(localStorage);
-
-        allKeys.forEach(function(key) {
-            if (keepKeys.indexOf(key) === -1) {
-                localStorage.removeItem(key);
-            }
-        });
-        console.log('🗑️ All data cleared!');
-    }
+    // Check if using Firebase
+    isFirebase: useFirebase
 };
 
 window.DataStore = DataStore;
 
 // ========================================
-// VALIDATE AND FIX DATA
+// FIREBASE IMAGE UPLOAD
 // ========================================
 
-function validateAndFixData() {
-    console.log('🔧 Validating data for NaN fixes...');
-
-    // Fix Portfolio
-    var portfolio = DataStore.get('portfolio');
-    if (!Array.isArray(portfolio) || portfolio.length === 0) {
-        console.log('📸 Initializing portfolio with sample data...');
-        portfolio = [{
-                id: 1,
-                title: 'Beautiful Wedding',
-                category: 'wedding',
-                image: 'https://images.unsplash.com/photo-1511798616182-98b7d9a7e2cc?w=600&h=400&fit=crop',
-                description: 'Elegant wedding photography'
-            },
-            {
-                id: 2,
-                title: 'Romantic Engagement',
-                category: 'engagement',
-                image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=400&fit=crop',
-                description: 'Beautiful engagement shoot'
-            },
-            {
-                id: 3,
-                title: 'Pre Wedding Shoot',
-                category: 'prewedding',
-                image: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=600&h=400&fit=crop',
-                description: 'Pre wedding couple session'
-            },
-            {
-                id: 4,
-                title: 'Baby Shower Celebration',
-                category: 'babyshower',
-                image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&h=400&fit=crop',
-                description: 'Baby shower party'
-            }
-        ];
-        DataStore.set('portfolio', portfolio);
+function uploadToFirebase(file) {
+    if (!file) {
+        showToast('Please select a file.', 'error');
+        return;
     }
 
-    // Fix Packages
-    var packages = DataStore.get('packages');
-    if (!Array.isArray(packages) || packages.length === 0) {
-        console.log('📦 Initializing packages with sample data...');
-        packages = [{
-                id: 1,
-                name: 'Silver',
-                price: 14999,
-                features: ['4 hours coverage', '100+ edited photos', 'Online gallery', 'Digital delivery'],
-                featured: false
-            },
-            {
-                id: 2,
-                name: 'Gold',
-                price: 29999,
-                features: ['8 hours coverage', '300+ edited photos', 'Online gallery', 'Digital delivery', '2 Photographers', 'Pre-wedding shoot'],
-                featured: true
-            },
-            {
-                id: 3,
-                name: 'Platinum',
-                price: 49999,
-                features: ['12 hours coverage', '500+ edited photos', 'Online gallery', 'Digital delivery', '3 Photographers', 'Pre-wedding & Post-wedding', 'Album design'],
-                featured: false
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('File too large. Max 5MB.', 'error');
+        return;
+    }
+
+    var statusEl = document.getElementById('firebaseStatus');
+    if (statusEl) {
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to Firebase...';
+        statusEl.style.color = '#3498db';
+    }
+
+    // Create a unique filename
+    var fileName = 'gallery/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+    var uploadTask = storage.ref(fileName).put(file);
+
+    uploadTask.on('state_changed',
+        function(snapshot) {
+            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            if (statusEl) {
+                statusEl.innerHTML = 'Uploading: ' + Math.round(progress) + '%';
             }
-        ];
-        DataStore.set('packages', packages);
-    } else {
-        // Validate each package has a valid price
-        var needsUpdate = false;
-        packages.forEach(function(pkg, index) {
-            if (typeof pkg.price !== 'number' || isNaN(pkg.price) || pkg.price === undefined) {
-                console.warn('⚠️ Fixing invalid price for package:', pkg.name);
-                packages[index].price = 0;
-                needsUpdate = true;
+        },
+        function(error) {
+            console.error('Upload error:', error);
+            if (statusEl) {
+                statusEl.innerHTML = '❌ Upload failed: ' + error.message;
+                statusEl.style.color = '#e74c3c';
             }
-        });
-        if (needsUpdate) {
-            DataStore.set('packages', packages);
+            showToast('❌ Upload failed: ' + error.message, 'error');
+        },
+        function() {
+            // Upload completed successfully
+            uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                // Auto-fill the URL field
+                var urlInput = document.getElementById('quickImageUrl');
+                if (urlInput) {
+                    urlInput.value = downloadURL;
+                }
+
+                // Show preview
+                var preview = document.getElementById('quickPreview');
+                if (preview) {
+                    preview.innerHTML = '<img src="' + downloadURL + '" alt="Preview" style="max-width:100%;max-height:250px;border-radius:8px;">';
+                    preview.classList.add('has-preview');
+                }
+
+                if (statusEl) {
+                    statusEl.innerHTML = '✅ Uploaded successfully!';
+                    statusEl.style.color = '#27ae60';
+                }
+
+                showToast('✅ Image uploaded to Firebase!', 'success');
+            }).catch(function(error) {
+                console.error('Get download URL error:', error);
+                showToast('❌ Error getting image URL', 'error');
+            });
         }
-    }
-
-    // Fix Submissions
-    var submissions = DataStore.get('submissions');
-    if (!Array.isArray(submissions)) {
-        console.log('📩 Initializing submissions...');
-        submissions = [];
-        DataStore.set('submissions', submissions);
-    }
-
-    console.log('✅ Data validation complete!');
-    console.log('📸 Portfolio:', Array.isArray(portfolio) ? portfolio.length : 0, 'items');
-    console.log('📦 Packages:', Array.isArray(packages) ? packages.length : 0, 'items');
-    console.log('📩 Submissions:', Array.isArray(submissions) ? submissions.length : 0, 'items');
+    );
 }
 
 // ========================================
@@ -219,7 +215,8 @@ function validateAndFixData() {
 // ========================================
 
 function initializeData() {
-    validateAndFixData();
+    // Data is now stored in Firebase, but we keep localStorage as fallback
+    console.log('📦 Using Firebase for data storage:', useFirebase);
 }
 
 // ========================================
@@ -362,7 +359,7 @@ function animateCounter(el, target) {
 }
 
 // ========================================
-// LIGHTBOX WITH ZOOM
+// LIGHTBOX
 // ========================================
 
 function initLightbox() {
@@ -470,7 +467,7 @@ function closeLightbox() {
 }
 
 // ========================================
-// CLIENT SIDE GALLERY
+// CLIENT GALLERY
 // ========================================
 
 function loadGalleryPreview() {
@@ -478,7 +475,7 @@ function loadGalleryPreview() {
     if (!container) return;
 
     var items = DataStore.get('portfolio').slice(0, 4);
-    if (!items || items.length === 0) {
+    if (items.length === 0) {
         container.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:40px;color:#999;">No images in gallery yet. Add some in the admin panel!</p>';
         return;
     }
@@ -501,7 +498,7 @@ function loadGalleryPage() {
     if (!container) return;
 
     var items = DataStore.get('portfolio');
-    if (!items || items.length === 0) {
+    if (items.length === 0) {
         container.innerHTML = '<div class="empty-gallery-msg" style="text-align:center;padding:60px;color:#999;grid-column:1/-1;"><i class="fas fa-images" style="font-size:4rem;display:block;margin-bottom:15px;color:#ddd;"></i><p style="font-size:1.2rem;margin-bottom:10px;color:#666;">No images in gallery yet</p><p style="color:#bbb;">Check back soon for amazing photos!</p></div>';
         return;
     }
@@ -535,7 +532,7 @@ function loadPackages() {
     if (!container) return;
 
     var items = DataStore.get('packages');
-    if (!items || items.length === 0) {
+    if (items.length === 0) {
         container.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:40px;color:#999;">No packages available.</p>';
         return;
     }
@@ -543,19 +540,16 @@ function loadPackages() {
     var html = '';
     items.forEach(function(pkg) {
         var featuredClass = pkg.featured ? 'featured' : '';
-        var price = typeof pkg.price === 'number' ? pkg.price : 0;
         html += '<div class="package-card ' + featuredClass + '">';
         html += '<div class="package-header">';
         html += '<h3>' + pkg.name + '</h3>';
-        html += '<div class="package-price">₹' + price.toLocaleString() + ' <span>/ session</span></div>';
+        html += '<div class="package-price">₹' + pkg.price.toLocaleString() + ' <span>/ session</span></div>';
         html += '</div>';
         html += '<div class="package-body">';
         html += '<ul>';
-        if (Array.isArray(pkg.features)) {
-            pkg.features.forEach(function(f) {
-                html += '<li><i class="fas fa-check"></i> ' + f + '</li>';
-            });
-        }
+        pkg.features.forEach(function(f) {
+            html += '<li><i class="fas fa-check"></i> ' + f + '</li>';
+        });
         html += '</ul>';
         html += '<a href="contact.html" class="btn btn-primary">Book Now</a>';
         html += '</div></div>';
@@ -621,8 +615,8 @@ function initContactForm() {
                 }
                 form.reset();
 
+                // Save to Firebase
                 var submissions = DataStore.get('submissions');
-                if (!Array.isArray(submissions)) submissions = [];
                 submissions.push({
                     id: Date.now(),
                     name: name,
@@ -634,6 +628,7 @@ function initContactForm() {
                     status: 'new'
                 });
                 DataStore.set('submissions', submissions);
+                console.log('✅ Submission saved to Firebase');
 
                 setTimeout(function() {
                     if (statusDiv) {
@@ -670,7 +665,7 @@ function initContactForm() {
 }
 
 // ========================================
-// ADMIN PANEL INIT
+// ADMIN PANEL
 // ========================================
 
 function initAdminPanel() {
@@ -686,9 +681,6 @@ function initAdminPanel() {
             window.location.href = 'login.html';
             return;
         }
-
-        // Validate data before loading admin pages
-        validateAndFixData();
 
         if (currentPage.indexOf('admin/index.html') !== -1 || currentPage.endsWith('/admin/')) {
             initAdminDashboard();
@@ -710,36 +702,6 @@ function initAdminPanel() {
     }
 }
 
-// ========================================
-// DATA STORE - FIXED
-// ========================================
-
-const DataStore = {
-    get: function(key, defaultVal = []) {
-        try {
-            var data = localStorage.getItem(key);
-            if (data) {
-                return JSON.parse(data);
-            }
-            return defaultVal;
-        } catch (e) {
-            console.error('Error reading from localStorage:', e);
-            return defaultVal;
-        }
-    },
-    set: function(key, data) {
-        try {
-            localStorage.setItem(key, JSON.stringify(data));
-            return true;
-        } catch (e) {
-            console.error('Error saving to localStorage:', e);
-            return false;
-        }
-    }
-};
-
-// Make it global
-window.DataStore = DataStore;
 // ========================================
 // ADMIN LOGIN
 // ========================================
@@ -767,29 +729,26 @@ function initAdminLogin() {
 }
 
 // ========================================
-// ADMIN DASHBOARD - FIXED
+// ADMIN DASHBOARD
 // ========================================
 
 function initAdminDashboard() {
     console.log('📊 Loading Dashboard...');
 
     try {
-        // Get data using DataStore
-        var portfolio = DataStore.get('portfolio');
-        var packages = DataStore.get('packages');
-        var submissions = DataStore.get('submissions');
+        var portfolio = DataStore.get('portfolio') || [];
+        var packages = DataStore.get('packages') || [];
+        var submissions = DataStore.get('submissions') || [];
 
-        // Ensure we have valid arrays
         var portfolioCount = Array.isArray(portfolio) ? portfolio.length : 0;
         var packagesCount = Array.isArray(packages) ? packages.length : 0;
         var submissionsCount = Array.isArray(submissions) ? submissions.length : 0;
 
-        // Calculate total revenue safely
         var totalRevenue = 0;
         if (Array.isArray(packages)) {
             packages.forEach(function(pkg) {
-                var price = typeof pkg.price === 'number' ? pkg.price : parseFloat(pkg.price) || 0;
-                totalRevenue += price;
+                var price = parseFloat(pkg.price) || 0;
+                if (price > 0) totalRevenue += price;
             });
         }
 
@@ -798,7 +757,6 @@ function initAdminDashboard() {
         console.log('📩 Submissions:', submissionsCount);
         console.log('💰 Revenue:', totalRevenue);
 
-        // Update DOM
         var statPortfolio = document.getElementById('statPortfolio');
         var statPackages = document.getElementById('statPackages');
         var statSubmissions = document.getElementById('statSubmissions');
@@ -807,28 +765,21 @@ function initAdminDashboard() {
         if (statPortfolio) statPortfolio.textContent = portfolioCount;
         if (statPackages) statPackages.textContent = packagesCount;
         if (statSubmissions) statSubmissions.textContent = submissionsCount;
-        if (statRevenue) statRevenue.textContent = '₹' + totalRevenue.toLocaleString();
+        if (statRevenue) statRevenue.textContent = '₹' + totalRevenue.toLocaleString('en-IN');
 
-        // Recent Submissions
         var recentTable = document.getElementById('recentSubmissions');
         if (recentTable) {
             var recent = Array.isArray(submissions) ? submissions.slice(-5).reverse() : [];
 
             if (recent.length === 0) {
-                recentTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No submissions yet.</td></tr>';
+                recentTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:30px;">No submissions yet.</td></tr>';
             } else {
                 var html = '';
                 recent.forEach(function(s) {
-                    var statusColor = s.status === 'new' ? '#e74c3c' : '#27ae60';
                     var statusText = s.status || 'new';
+                    var statusClass = statusText === 'new' ? 'badge-new' : 'badge-read';
                     var dateText = s.date || new Date().toLocaleString();
-
-                    html += '<tr>';
-                    html += '<td><strong>' + (s.name || 'Unknown') + '</strong></td>';
-                    html += '<td>' + (s.email || 'N/A') + '</td>';
-                    html += '<td><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;">' + statusText + '</span></td>';
-                    html += '<td>' + dateText + '</td>';
-                    html += '</tr>';
+                    html += '<tr><td><strong>' + (s.name || 'Unknown') + '</strong></td><td>' + (s.email || 'N/A') + '</td><td><span class="badge ' + statusClass + '">' + statusText + '</span></td><td style="color:#888;">' + dateText + '</td></tr>';
                 });
                 recentTable.innerHTML = html;
             }
@@ -842,14 +793,11 @@ function initAdminDashboard() {
 }
 
 // ========================================
-// ADMIN PACKAGES (CRUD)
+// ADMIN PACKAGES
 // ========================================
 
 function initAdminPackages() {
-    var table = document.getElementById('packagesTable');
-    if (!table) return;
-
-    renderPackagesTable(table);
+    renderPackagesTable();
 
     var addBtn = document.getElementById('addPackageBtn');
     if (addBtn) {
@@ -876,33 +824,60 @@ function initAdminPackages() {
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            savePackage(this);
+            savePackage(e);
         });
     }
 }
 
-function renderPackagesTable(table) {
-    var items = DataStore.get('packages');
-    if (!items || items.length === 0) {
-        table.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">No packages added yet.</td></tr>';
+function renderPackagesTable() {
+    var table = document.getElementById('packagesTable');
+    if (!table) return;
+
+    var items = DataStore.get('packages') || [];
+
+    if (items.length === 0) {
+        table.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;padding:40px;">No packages added yet.</td></tr>';
         return;
     }
 
     var html = '';
     items.forEach(function(pkg) {
-        var price = typeof pkg.price === 'number' ? pkg.price : 0;
-        html += '<tr>';
-        html += '<td><strong>' + pkg.name + '</strong></td>';
-        html += '<td>₹' + price.toLocaleString() + '</td>';
-        html += '<td>' + (Array.isArray(pkg.features) ? pkg.features.length : 0) + ' features</td>';
-        html += '<td>' + (pkg.featured ? '⭐ Yes' : 'No') + '</td>';
-        html += '<td><div class="actions">';
-        html += '<button class="btn-sm btn-edit" onclick="editPackage(' + pkg.id + ')"><i class="fas fa-edit"></i> Edit</button>';
-        html += '<button class="btn-sm btn-delete" onclick="deletePackage(' + pkg.id + ')"><i class="fas fa-trash"></i> Delete</button>';
-        html += '</div></td></tr>';
+        var featuredBadge = pkg.featured ? '<span style="background:#D4AF37;color:#0A0A0A;padding:2px 10px;border-radius:12px;font-size:0.7rem;font-weight:600;"><i class="fas fa-star"></i> Featured</span>' : 'No';
+        html += '<tr><td><strong>' + (pkg.name || 'Untitled') + '</strong></td><td>₹' + (pkg.price || 0).toLocaleString() + '</td><td>' + (Array.isArray(pkg.features) ? pkg.features.length : 0) + ' features</td><td>' + featuredBadge + '</td><td><div class="actions"><button class="btn-sm btn-edit" onclick="editPackage(' + pkg.id + ')"><i class="fas fa-edit"></i> Edit</button><button class="btn-sm btn-delete" onclick="deletePackage(' + pkg.id + ')"><i class="fas fa-trash"></i> Delete</button></div></td></tr>';
     });
     table.innerHTML = html;
 }
+
+window.editPackage = function(id) {
+    var items = DataStore.get('packages') || [];
+    var pkg = null;
+    for (var i = 0; i < items.length; i++) {
+        if (String(items[i].id) === String(id)) {
+            pkg = items[i];
+            break;
+        }
+    }
+    if (pkg) {
+        openPackageModal(pkg);
+    } else {
+        showToast('Package not found.', 'error');
+    }
+};
+
+window.deletePackage = function(id) {
+    if (!confirm('Are you sure you want to delete this package?')) return;
+
+    var packages = DataStore.get('packages') || [];
+    var newPackages = [];
+    for (var i = 0; i < packages.length; i++) {
+        if (String(packages[i].id) !== String(id)) {
+            newPackages.push(packages[i]);
+        }
+    }
+    DataStore.set('packages', newPackages);
+    showToast('Package deleted successfully!', 'success');
+    renderPackagesTable();
+};
 
 function openPackageModal(pkg) {
     var modal = document.getElementById('packageModal');
@@ -916,7 +891,7 @@ function openPackageModal(pkg) {
     document.getElementById('packageId').value = pkg ? pkg.id : '';
     document.getElementById('pkgName').value = pkg ? pkg.name : '';
     document.getElementById('pkgPrice').value = pkg ? pkg.price : '';
-    document.getElementById('pkgFeatures').value = pkg ? (Array.isArray(pkg.features) ? pkg.features.join('\n') : '') : '';
+    document.getElementById('pkgFeatures').value = pkg ? (Array.isArray(pkg.features) ? pkg.features.join('\n') : pkg.features) : '';
     document.getElementById('pkgFeatured').checked = pkg ? pkg.featured : false;
 
     modal.classList.add('active');
@@ -924,133 +899,150 @@ function openPackageModal(pkg) {
 
 function closeModal() {
     var modal = document.getElementById('packageModal');
-    var modal2 = document.getElementById('portfolioModal');
     if (modal) modal.classList.remove('active');
-    if (modal2) modal2.classList.remove('active');
 }
 
-function savePackage(form) {
-    var id = parseInt(document.getElementById('packageId').value);
-    var pkg = {
-        name: document.getElementById('pkgName').value.trim(),
-        price: parseInt(document.getElementById('pkgPrice').value) || 0,
-        features: document.getElementById('pkgFeatures').value.split('\n').filter(function(f) {
-            return f.trim();
-        }),
-        featured: document.getElementById('pkgFeatured').checked
-    };
+function savePackage(e) {
+    e.preventDefault();
 
-    if (!pkg.name || pkg.price <= 0 || pkg.features.length === 0) {
+    var id = document.getElementById('packageId').value;
+    var name = document.getElementById('pkgName').value.trim();
+    var price = parseFloat(document.getElementById('pkgPrice').value);
+    var featuresText = document.getElementById('pkgFeatures').value;
+    var featured = document.getElementById('pkgFeatured').checked;
+
+    if (!name || !price || isNaN(price) || price <= 0) {
         showToast('Please fill in all fields correctly.', 'error');
         return;
     }
 
-    var packages = DataStore.get('packages');
-    if (!Array.isArray(packages)) packages = [];
+    var features = featuresText.split('\n').map(function(f) { return f.trim(); }).filter(function(f) { return f.length > 0; });
+
+    if (features.length === 0) {
+        showToast('Please enter at least one feature.', 'error');
+        return;
+    }
+
+    var packages = DataStore.get('packages') || [];
 
     if (id) {
-        var index = -1;
         for (var i = 0; i < packages.length; i++) {
-            if (packages[i].id === id) {
-                index = i;
+            if (String(packages[i].id) === String(id)) {
+                packages[i] = { id: packages[i].id, name: name, price: price, features: features, featured: featured };
                 break;
             }
         }
-        if (index !== -1) {
-            packages[index] = {
-                id: packages[index].id,
-                name: pkg.name,
-                price: pkg.price,
-                features: pkg.features,
-                featured: pkg.featured
-            };
-        }
         showToast('Package updated successfully!', 'success');
     } else {
-        pkg.id = Date.now();
-        packages.push(pkg);
+        packages.push({ id: Date.now() + Math.random() * 1000, name: name, price: price, features: features, featured: featured });
         showToast('Package added successfully!', 'success');
     }
 
     DataStore.set('packages', packages);
     closeModal();
-    renderPackagesTable(document.getElementById('packagesTable'));
+    renderPackagesTable();
 }
-
-window.editPackage = function(id) {
-    var items = DataStore.get('packages');
-    var pkg = null;
-    if (Array.isArray(items)) {
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].id === id) {
-                pkg = items[i];
-                break;
-            }
-        }
-    }
-    if (pkg) openPackageModal(pkg);
-};
-
-window.deletePackage = function(id) {
-    if (!confirm('Are you sure you want to delete this package?')) return;
-
-    var packages = DataStore.get('packages');
-    if (!Array.isArray(packages)) return;
-
-    var newPackages = [];
-    for (var i = 0; i < packages.length; i++) {
-        if (packages[i].id !== id) {
-            newPackages.push(packages[i]);
-        }
-    }
-    DataStore.set('packages', newPackages);
-    showToast('Package deleted successfully!', 'success');
-    renderPackagesTable(document.getElementById('packagesTable'));
-};
 
 // ========================================
 // ADMIN SUBMISSIONS
 // ========================================
 
 function initAdminSubmissions() {
-    var table = document.getElementById('submissionsTable');
-    if (!table) return;
-
-    renderSubmissionsTable(table);
+    console.log('📩 Initializing Submissions...');
+    renderSubmissions();
 
     var markAllBtn = document.getElementById('markAllRead');
     if (markAllBtn) {
         markAllBtn.addEventListener('click', function() {
-            var submissions = DataStore.get('submissions');
-            if (Array.isArray(submissions)) {
-                for (var i = 0; i < submissions.length; i++) {
+            var submissions = DataStore.get('submissions') || [];
+            var hasNew = false;
+            for (var i = 0; i < submissions.length; i++) {
+                if (submissions[i].status === 'new') {
                     submissions[i].status = 'read';
+                    hasNew = true;
                 }
+            }
+            if (hasNew) {
                 DataStore.set('submissions', submissions);
-                renderSubmissionsTable(table);
+                renderSubmissions();
                 showToast('All submissions marked as read.', 'success');
+            } else {
+                showToast('No new submissions to mark.', 'info');
             }
         });
     }
+
+    var refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            renderSubmissions();
+            showToast('🔄 Refreshed', 'info');
+        });
+    }
+
+    var filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(function(b) {
+                b.classList.remove('active');
+                b.style.background = 'transparent';
+                b.style.color = '#b8b8b8';
+            });
+            this.classList.add('active');
+            this.style.background = 'rgba(212, 175, 55, 0.15)';
+            this.style.color = '#D4AF37';
+
+            currentFilter = this.dataset.filter;
+            renderSubmissions();
+        });
+    });
 }
 
-function renderSubmissionsTable(table) {
-    var items = DataStore.get('submissions');
-    if (!items || items.length === 0) {
-        table.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:40px;">No submissions yet.</td></tr>';
+var currentFilter = 'all';
+
+function renderSubmissions() {
+    console.log('📩 Rendering submissions...');
+
+    var table = document.getElementById('submissionsTable');
+    if (!table) {
+        console.error('Table not found!');
+        return;
+    }
+
+    var items = DataStore.get('submissions') || [];
+    console.log('📩 Submissions found:', items.length);
+
+    var filtered = items;
+    if (currentFilter !== 'all') {
+        filtered = items.filter(function(s) {
+            return s.status === currentFilter;
+        });
+    }
+
+    var countEl = document.getElementById('submissionCount');
+    if (countEl) {
+        countEl.textContent = filtered.length + ' submissions';
+    }
+
+    if (filtered.length === 0) {
+        table.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#666;padding:40px;">No submissions yet.</td></tr>';
         return;
     }
 
     var html = '';
-    items.forEach(function(s, index) {
-        var statusColor = s.status === 'new' ? '#e74c3c' : '#27ae60';
-        html += '<tr>';
+    filtered.forEach(function(s, index) {
+        var statusClass = s.status === 'new' ? 'badge-new' : s.status === 'replied' ? 'badge-replied' : 'badge-read';
+        var rowClass = s.status === 'new' ? 'submission-new' : '';
+        var dateText = s.date || new Date().toLocaleString();
+
+        html += '<tr class="' + rowClass + '">';
         html += '<td>' + (index + 1) + '</td>';
-        html += '<td><strong>' + s.name + '</strong></td>';
-        html += '<td>' + s.email + '</td>';
+        html += '<td><strong>' + (s.name || 'Unknown') + '</strong></td>';
+        html += '<td><a href="mailto:' + (s.email || '') + '" style="color:#D4AF37;text-decoration:none;">' + (s.email || 'N/A') + '</a></td>';
         html += '<td>' + (s.phone || '-') + '</td>';
-        html += '<td>' + s.service + '</td>';
-        html += '<td><span style="background:' + statusColor + ';color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;">' + s.status + '</span></td>';
+        html += '<td>' + (s.service || '-') + '</td>';
+        html += '<td><span class="' + statusClass + '">' + (s.status || 'new') + '</span></td>';
+        html += '<td style="font-size:0.85rem;color:#888;">' + dateText + '</td>';
         html += '<td><div class="actions">';
         html += '<button class="btn-sm btn-view" onclick="viewSubmission(' + s.id + ')"><i class="fas fa-eye"></i> View</button>';
         if (s.status === 'new') {
@@ -1063,14 +1055,12 @@ function renderSubmissionsTable(table) {
 }
 
 window.viewSubmission = function(id) {
-    var items = DataStore.get('submissions');
+    var items = DataStore.get('submissions') || [];
     var sub = null;
-    if (Array.isArray(items)) {
-        for (var i = 0; i < items.length; i++) {
-            if (items[i].id === id) {
-                sub = items[i];
-                break;
-            }
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].id === id) {
+            sub = items[i];
+            break;
         }
     }
     if (!sub) return;
@@ -1078,49 +1068,36 @@ window.viewSubmission = function(id) {
     alert('📩 Message from ' + sub.name + '\n\nEmail: ' + sub.email + '\nPhone: ' + (sub.phone || 'N/A') + '\nService: ' + sub.service + '\nDate: ' + sub.date + '\n\nMessage:\n' + sub.message);
 
     if (sub.status === 'new') {
-        var submissions = DataStore.get('submissions');
-        if (Array.isArray(submissions)) {
-            var index = -1;
-            for (var j = 0; j < submissions.length; j++) {
-                if (submissions[j].id === id) {
-                    index = j;
-                    break;
-                }
-            }
-            if (index !== -1) {
-                submissions[index].status = 'read';
-                DataStore.set('submissions', submissions);
-                renderSubmissionsTable(document.getElementById('submissionsTable'));
+        var submissions = DataStore.get('submissions') || [];
+        for (var j = 0; j < submissions.length; j++) {
+            if (submissions[j].id === id) {
+                submissions[j].status = 'read';
+                break;
             }
         }
+        DataStore.set('submissions', submissions);
+        renderSubmissions();
+        showToast('Marked as read.', 'success');
     }
 };
 
 window.markRead = function(id) {
-    var submissions = DataStore.get('submissions');
-    if (Array.isArray(submissions)) {
-        var index = -1;
-        for (var i = 0; i < submissions.length; i++) {
-            if (submissions[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-        if (index !== -1) {
-            submissions[index].status = 'read';
-            DataStore.set('submissions', submissions);
-            showToast('Marked as read.', 'success');
-            renderSubmissionsTable(document.getElementById('submissionsTable'));
+    var submissions = DataStore.get('submissions') || [];
+    for (var i = 0; i < submissions.length; i++) {
+        if (submissions[i].id === id) {
+            submissions[i].status = 'read';
+            break;
         }
     }
+    DataStore.set('submissions', submissions);
+    renderSubmissions();
+    showToast('Marked as read.', 'success');
 };
 
 window.deleteSubmission = function(id) {
     if (!confirm('Delete this submission?')) return;
 
-    var submissions = DataStore.get('submissions');
-    if (!Array.isArray(submissions)) return;
-
+    var submissions = DataStore.get('submissions') || [];
     var newSubmissions = [];
     for (var i = 0; i < submissions.length; i++) {
         if (submissions[i].id !== id) {
@@ -1128,18 +1105,17 @@ window.deleteSubmission = function(id) {
         }
     }
     DataStore.set('submissions', newSubmissions);
+    renderSubmissions();
     showToast('Submission deleted.', 'success');
-    renderSubmissionsTable(document.getElementById('submissionsTable'));
 };
 
 // ========================================
-// ADMIN GALLERY - COMPLETE WORKING
+// ADMIN GALLERY
 // ========================================
 
 function initAdminGallery() {
     console.log('📸 Initializing Admin Gallery...');
-
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
+    renderAdminGallery();
     updateStats();
 
     var addBtn = document.getElementById('quickAddBtn');
@@ -1172,7 +1148,7 @@ function initAdminGallery() {
     if (quickUrlInput && quickPreview) {
         quickUrlInput.addEventListener('input', function() {
             var url = this.value.trim();
-            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+            if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('images/'))) {
                 var img = new Image();
                 img.onload = function() {
                     quickPreview.innerHTML = '<img src="' + url + '" alt="Preview" style="max-width:100%;max-height:250px;border-radius:8px;">';
@@ -1203,23 +1179,19 @@ function initAdminGallery() {
     if (modalForm) {
         modalForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            savePortfolio(this);
+            savePortfolio(e);
         });
     }
 }
 
-function renderAdminGallery(container) {
-    var items = DataStore.get('portfolio');
+function renderAdminGallery() {
+    var container = document.getElementById('adminGalleryGrid');
     if (!container) return;
 
-    if (!items || items.length === 0) {
-        container.innerHTML = `
-            <div class="empty-gallery-state">
-                <i class="fas fa-images"></i>
-                <h3>No Images in Gallery</h3>
-                <p>Add your first image using the form above.</p>
-            </div>
-        `;
+    var items = DataStore.get('portfolio') || [];
+
+    if (items.length === 0) {
+        container.innerHTML = '<div class="empty-gallery-state"><i class="fas fa-images"></i><h3>No Images in Gallery</h3><p>Add your first image using the form above.</p></div>';
         return;
     }
 
@@ -1254,8 +1226,8 @@ function renderAdminGallery(container) {
 }
 
 function updateStats() {
-    var items = DataStore.get('portfolio');
-    var count = items ? items.length : 0;
+    var items = DataStore.get('portfolio') || [];
+    var count = items.length;
 
     var totalEl = document.getElementById('totalImages');
     if (totalEl) totalEl.textContent = count;
@@ -1264,14 +1236,12 @@ function updateStats() {
         eventCount = 0,
         portraitCount = 0,
         natureCount = 0;
-    if (items) {
-        items.forEach(function(item) {
-            if (item.category === 'wedding') weddingCount++;
-            else if (item.category === 'event') eventCount++;
-            else if (item.category === 'portrait') portraitCount++;
-            else if (item.category === 'nature') natureCount++;
-        });
-    }
+    items.forEach(function(item) {
+        if (item.category === 'wedding') weddingCount++;
+        else if (item.category === 'event') eventCount++;
+        else if (item.category === 'portrait') portraitCount++;
+        else if (item.category === 'nature') natureCount++;
+    });
 
     var weddingEl = document.getElementById('weddingCount');
     var eventEl = document.getElementById('eventCount');
@@ -1284,6 +1254,10 @@ function updateStats() {
     if (natureEl) natureEl.textContent = natureCount;
 }
 
+// ========================================
+// QUICK ADD IMAGE
+// ========================================
+
 window.quickAddImage = function() {
     console.log('Quick Add triggered');
     var urlInput = document.getElementById('quickImageUrl');
@@ -1291,10 +1265,7 @@ window.quickAddImage = function() {
     var categorySelect = document.getElementById('quickCategory');
     var descriptionInput = document.getElementById('quickDescription');
 
-    if (!urlInput) {
-        showToast('Input field not found.', 'error');
-        return;
-    }
+    if (!urlInput) return;
 
     var url = urlInput.value.trim();
     var title = titleInput ? titleInput.value.trim() : '';
@@ -1303,12 +1274,15 @@ window.quickAddImage = function() {
 
     if (!url) {
         showToast('Please enter an image URL.', 'error');
-        urlInput.focus();
         return;
     }
 
-    var portfolio = DataStore.get('portfolio');
-    if (!Array.isArray(portfolio)) portfolio = [];
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('images/')) {
+        showToast('Please enter a valid URL (http://, https://, or images/)', 'error');
+        return;
+    }
+
+    var portfolio = DataStore.get('portfolio') || [];
 
     var exists = false;
     for (var i = 0; i < portfolio.length; i++) {
@@ -1345,33 +1319,23 @@ window.quickAddImage = function() {
         preview.classList.remove('has-preview');
     }
 
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
+    renderAdminGallery();
 };
 
 window.handleUrlUpload = function() {
-    console.log('Bulk Upload triggered');
     var urlInput = document.getElementById('urlInput');
-    if (!urlInput) {
-        showToast('Input field not found.', 'error');
-        return;
-    }
+    if (!urlInput) return;
 
-    var urls = urlInput.value.split('\n')
-        .map(function(url) { return url.trim(); })
-        .filter(function(url) { return url.length > 0; });
+    var urls = urlInput.value.split('\n').map(function(url) { return url.trim(); }).filter(function(url) { return url.length > 0; });
 
     if (urls.length === 0) {
         showToast('Please paste at least one image URL.', 'error');
-        urlInput.focus();
         return;
     }
 
-    var portfolio = DataStore.get('portfolio');
-    if (!Array.isArray(portfolio)) portfolio = [];
-
+    var portfolio = DataStore.get('portfolio') || [];
     var addedCount = 0;
     var skippedCount = 0;
-
     var existingUrls = {};
     for (var i = 0; i < portfolio.length; i++) {
         existingUrls[portfolio[i].image] = true;
@@ -1383,7 +1347,6 @@ window.handleUrlUpload = function() {
             skippedCount++;
             continue;
         }
-
         portfolio.push({
             id: Date.now() + j + Math.random() * 1000,
             title: 'Image ' + (portfolio.length + addedCount + 1),
@@ -1396,23 +1359,13 @@ window.handleUrlUpload = function() {
     }
 
     DataStore.set('portfolio', portfolio);
-
-    var message = '✅ ' + addedCount + ' images added successfully!';
-    if (skippedCount > 0) {
-        message += ' (' + skippedCount + ' skipped - already exist)';
-    }
-    showToast(message, 'success');
+    showToast('✅ ' + addedCount + ' images added successfully!', 'success');
     urlInput.value = '';
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
+    renderAdminGallery();
 };
 
 window.viewImage = function(id) {
-    var items = DataStore.get('portfolio');
-    if (!items) {
-        showToast('Image not found.', 'error');
-        return;
-    }
-
+    var items = DataStore.get('portfolio') || [];
     var item = null;
     for (var i = 0; i < items.length; i++) {
         if (items[i].id === id) {
@@ -1441,13 +1394,7 @@ function closeViewModal() {
 }
 
 window.editImage = function(id) {
-    console.log('Edit Image triggered for ID:', id);
-    var items = DataStore.get('portfolio');
-    if (!items) {
-        showToast('Image not found.', 'error');
-        return;
-    }
-
+    var items = DataStore.get('portfolio') || [];
     var item = null;
     for (var i = 0; i < items.length; i++) {
         if (String(items[i].id) === String(id)) {
@@ -1458,16 +1405,14 @@ window.editImage = function(id) {
     if (item) {
         openPortfolioModal(item);
     } else {
-        showToast('Image not found with ID: ' + id, 'error');
+        showToast('Image not found.', 'error');
     }
 };
 
 window.deleteImage = function(id) {
-    if (!confirm('Are you sure you want to delete this image?')) return;
+    if (!confirm('Delete this image?')) return;
 
-    var portfolio = DataStore.get('portfolio');
-    if (!Array.isArray(portfolio)) return;
-
+    var portfolio = DataStore.get('portfolio') || [];
     var newPortfolio = [];
     for (var i = 0; i < portfolio.length; i++) {
         if (String(portfolio[i].id) !== String(id)) {
@@ -1475,34 +1420,29 @@ window.deleteImage = function(id) {
         }
     }
     DataStore.set('portfolio', newPortfolio);
-    showToast('🗑️ Image deleted successfully!', 'success');
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
-};
-
-window.clearAllImages = function() {
-    var items = DataStore.get('portfolio');
-    var count = items ? items.length : 0;
-
-    if (count === 0) {
-        showToast('No images to clear.', 'info');
-        return;
-    }
-
-    if (!confirm('⚠️ Are you sure you want to delete ALL ' + count + ' images? This cannot be undone!')) return;
-    if (!confirm('Really? All images will be permanently deleted!')) return;
-
-    DataStore.set('portfolio', []);
-    showToast('🗑️ All images cleared!', 'success');
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
+    showToast('Image deleted successfully!', 'success');
+    renderAdminGallery();
 };
 
 window.refreshGallery = function() {
-    renderAdminGallery(document.getElementById('adminGalleryGrid'));
+    renderAdminGallery();
     showToast('🔄 Gallery refreshed!', 'info');
 };
 
+window.clearAllImages = function() {
+    var items = DataStore.get('portfolio') || [];
+    if (items.length === 0) {
+        showToast('No images to clear.', 'info');
+        return;
+    }
+    if (!confirm('⚠️ Delete ALL ' + items.length + ' images? This cannot be undone!')) return;
+
+    DataStore.set('portfolio', []);
+    showToast('All images cleared!', 'success');
+    renderAdminGallery();
+};
+
 function openPortfolioModal(item) {
-    console.log('Opening edit modal for:', item);
     var modal = document.getElementById('portfolioModal');
     var form = document.getElementById('portfolioForm');
     var title = document.getElementById('modalTitle');
@@ -1511,9 +1451,7 @@ function openPortfolioModal(item) {
     if (!modal || !form) return;
 
     title.textContent = item ? '✏️ Edit Image' : '📷 Add New Image';
-
     form.reset();
-
     document.getElementById('portfolioId').value = item ? item.id : '';
     document.getElementById('portTitle').value = item ? item.title : '';
     document.getElementById('portCategory').value = item ? item.category : 'custom';
@@ -1527,19 +1465,10 @@ function openPortfolioModal(item) {
     }
 
     modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
 
-function closeModal() {
-    var modal = document.getElementById('portfolioModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-}
-
-function savePortfolio(form) {
-    console.log('Saving portfolio item...');
+function savePortfolio(e) {
+    e.preventDefault();
 
     var id = document.getElementById('portfolioId').value;
     var title = document.getElementById('portTitle').value.trim();
@@ -1552,47 +1481,24 @@ function savePortfolio(form) {
         return;
     }
 
-    var portfolio = DataStore.get('portfolio');
-    if (!Array.isArray(portfolio)) portfolio = [];
+    var portfolio = DataStore.get('portfolio') || [];
 
     if (id) {
-        var found = false;
         for (var i = 0; i < portfolio.length; i++) {
             if (String(portfolio[i].id) === String(id)) {
-                portfolio[i] = {
-                    id: portfolio[i].id,
-                    title: title,
-                    category: category,
-                    image: image,
-                    description: description || ''
-                };
-                found = true;
+                portfolio[i] = { id: portfolio[i].id, title: title, category: category, image: image, description: description || '' };
                 break;
             }
         }
-
-        if (found) {
-            DataStore.set('portfolio', portfolio);
-            showToast('✅ Image updated successfully!', 'success');
-            closeModal();
-            renderAdminGallery(document.getElementById('adminGalleryGrid'));
-        } else {
-            showToast('❌ Image not found in portfolio. Please refresh and try again.', 'error');
-        }
+        showToast('✅ Image updated successfully!', 'success');
     } else {
-        var newItem = {
-            id: Date.now() + Math.random() * 1000,
-            title: title,
-            category: category,
-            image: image,
-            description: description || ''
-        };
-        portfolio.push(newItem);
-        DataStore.set('portfolio', portfolio);
+        portfolio.push({ id: Date.now() + Math.random() * 1000, title: title, category: category, image: image, description: description || '' });
         showToast('✅ Image added successfully!', 'success');
-        closeModal();
-        renderAdminGallery(document.getElementById('adminGalleryGrid'));
     }
+
+    DataStore.set('portfolio', portfolio);
+    closeModal();
+    renderAdminGallery();
 }
 
 // ========================================
@@ -1611,30 +1517,12 @@ function forceMobileUpdate() {
 
     if (!lastCheck || (now - parseInt(lastCheck)) > 300000) {
         localStorage.setItem('mobile_check', now);
-
         var portfolio = localStorage.getItem('portfolio');
         if (!portfolio || portfolio === '[]' || portfolio === 'null') {
             console.log('📱 Mobile: No data found, reloading...');
             window.location.reload(true);
         }
     }
-}
-
-// ========================================
-// SERVICE WORKER REGISTRATION
-// ========================================
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/js/sw.js')
-        .then(function(registration) {
-            console.log('✅ Service Worker registered');
-            registration.addEventListener('updatefound', function() {
-                console.log('🔄 Service Worker update found');
-            });
-        })
-        .catch(function(error) {
-            console.log('❌ Service Worker registration failed:', error);
-        });
 }
 
 // ========================================
@@ -1681,9 +1569,13 @@ window.handleUrlUpload = handleUrlUpload;
 window.refreshGallery = refreshGallery;
 window.clearAllImages = clearAllImages;
 window.initAdminDashboard = initAdminDashboard;
-window.validateAndFixData = validateAndFixData;
+window.renderSubmissions = renderSubmissions;
+window.renderPackagesTable = renderPackagesTable;
+window.renderAdminGallery = renderAdminGallery;
+window.updateStats = updateStats;
+window.uploadToFirebase = uploadToFirebase;
 
 console.log('📱 Mahadev Photography v' + APP_VERSION + ' loaded!');
 console.log('📸 Admin Login: admin@mahadevphotography.com / admin123');
+console.log('🔥 Firebase Status:', useFirebase ? 'Connected ✅' : 'Not connected ❌');
 console.log('📞 Contact: +91 94264 24213, +91 81608 42941');
-console.log('📧 Email: mahadevphotography1921@gmail.com');
