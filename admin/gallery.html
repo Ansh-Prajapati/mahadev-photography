@@ -9,29 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-
-    <!-- Firebase Config -->
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyB0oQ5jckK83kCPpYpQRqCtg1POW1Wr83k",
-            authDomain: "mahadev-photography.firebaseapp.com",
-            projectId: "mahadev-photography",
-            storageBucket: "mahadev-photography.firebasestorage.app",
-            messagingSenderId: "584518739767",
-            appId: "1:584518739767:web:64d7461ba46dba83d85cb2",
-            measurementId: "G-1G5YDP7M4D"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-        console.log('🔥 Firebase initialized!');
-        console.log('📁 Storage bucket:', firebaseConfig.storageBucket);
-    </script>
-
     <style>
         .gallery-container {
             padding: 20px 0;
@@ -241,8 +218,9 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
         }
+        /* ImgBB Upload Section */
         
-        .firebase-upload-section {
+        .imgbb-upload-section {
             background: rgba(46, 204, 113, 0.05);
             padding: 20px;
             border-radius: 10px;
@@ -250,8 +228,8 @@
             margin-bottom: 20px;
         }
         
-        .firebase-upload-section .btn-firebase {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        .imgbb-upload-section .btn-imgbb {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
             padding: 14px 35px;
             font-size: 1rem;
             border: none;
@@ -262,35 +240,35 @@
             transition: all 0.3s ease;
         }
         
-        .firebase-upload-section .btn-firebase:hover {
+        .imgbb-upload-section .btn-imgbb:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
         }
         
-        .firebase-upload-section .btn-firebase:disabled {
+        .imgbb-upload-section .btn-imgbb:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
         
-        #firebaseStatus {
+        #imgbbStatus {
             margin-top: 10px;
             font-weight: 600;
             padding: 8px 12px;
             border-radius: 6px;
         }
         
-        #firebaseStatus.success {
+        #imgbbStatus.success {
             color: #27ae60;
             background: rgba(46, 204, 113, 0.1);
         }
         
-        #firebaseStatus.error {
+        #imgbbStatus.error {
             color: #e74c3c;
             background: rgba(231, 76, 60, 0.1);
         }
         
-        #firebaseStatus.loading {
+        #imgbbStatus.loading {
             color: #3498db;
             background: rgba(52, 152, 219, 0.1);
         }
@@ -1065,24 +1043,24 @@
                         <i class="fas fa-plus-circle"></i> Add New Image
                     </div>
 
-                    <!-- Firebase Upload -->
-                    <div class="firebase-upload-section">
+                    <!-- ImgBB Upload - 100% FREE -->
+                    <div class="imgbb-upload-section">
                         <p style="color:#b8b8b8;font-size:0.85rem;margin-bottom:10px;">
-                            <i class="fas fa-info-circle"></i> Max file size: <strong>15 MB</strong> (JPG, PNG, WebP, GIF)
+                            <i class="fas fa-info-circle"></i> <strong>FREE</strong> - Upload to ImgBB (No storage limits!)
                         </p>
-                        <input type="file" id="firebaseImageInput" accept="image/*" style="display:none;" onchange="uploadToFirebase(this.files[0])">
-                        <button class="btn-firebase" onclick="document.getElementById('firebaseImageInput').click()">
-                            <i class="fas fa-cloud-upload-alt"></i> Upload to Firebase
+                        <input type="file" id="imgbbImageInput" accept="image/*" style="display:none;" onchange="uploadToImgBB(this.files[0])">
+                        <button class="btn-imgbb" onclick="document.getElementById('imgbbImageInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload to ImgBB (FREE)
                         </button>
-                        <small style="color:#7f8c8d;margin-left:15px;">Images stored in Firebase Storage</small>
-                        <div id="firebaseStatus"></div>
+                        <small style="color:#7f8c8d;margin-left:15px;">Images stored on ImgBB - 100% Free</small>
+                        <div id="imgbbStatus"></div>
                     </div>
 
                     <div class="add-image-grid">
                         <div>
                             <div class="form-group">
                                 <label>Image URL <span class="required">*</span></label>
-                                <input type="text" id="quickImageUrl" placeholder="https://example.com/image.jpg or Firebase URL">
+                                <input type="text" id="quickImageUrl" placeholder="https://example.com/image.jpg">
                             </div>
                             <div class="form-group">
                                 <label>Title <span class="required">*</span></label>
@@ -1211,87 +1189,29 @@
 
     <script>
         // ========================================
-        // ADMIN GALLERY - FIREBASE INTEGRATED
+        // ADMIN GALLERY - IMGBB FREE VERSION
         // ========================================
 
         // ========================================
-        // DATA STORE - FIREBASE
+        // DATA STORE - localStorage (No Firebase needed)
         // ========================================
         const DataStore = {
-            get: async function(key, defaultVal = []) {
+            get: function(key, defaultVal = []) {
                 try {
-                    const collectionMap = {
-                        'portfolio': 'gallery',
-                        'packages': 'packages',
-                        'submissions': 'submissions'
-                    };
-                    const collectionName = collectionMap[key] || key;
-                    const snapshot = await db.collection(collectionName).orderBy('createdAt', 'desc').get();
-
-                    if (snapshot.empty) return defaultVal;
-
-                    const items = [];
-                    snapshot.forEach(doc => {
-                        items.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    });
-                    return items;
-                } catch (error) {
-                    console.error('Firebase get error:', error);
-                    try {
-                        const data = localStorage.getItem(key);
-                        return data ? JSON.parse(data) : defaultVal;
-                    } catch (e) {
-                        return defaultVal;
-                    }
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : defaultVal;
+                } catch (e) {
+                    console.error('Error reading from localStorage:', e);
+                    return defaultVal;
                 }
             },
-            set: async function(key, data) {
+            set: function(key, data) {
                 try {
-                    const collectionMap = {
-                        'portfolio': 'gallery',
-                        'packages': 'packages',
-                        'submissions': 'submissions'
-                    };
-                    const collectionName = collectionMap[key] || key;
-
-                    for (const item of data) {
-                        if (item.id) {
-                            const docRef = db.collection(collectionName).doc(String(item.id));
-                            const docSnap = await docRef.get();
-                            if (docSnap.exists) {
-                                await docRef.update({
-                                    ...item,
-                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                            } else {
-                                await docRef.set({
-                                    ...item,
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                            }
-                        } else {
-                            const docRef = db.collection(collectionName).doc();
-                            await docRef.set({
-                                ...item,
-                                id: docRef.id,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }
-                    }
+                    localStorage.setItem(key, JSON.stringify(data));
                     return true;
-                } catch (error) {
-                    console.error('Firebase set error:', error);
-                    try {
-                        localStorage.setItem(key, JSON.stringify(data));
-                        return true;
-                    } catch (e) {
-                        return false;
-                    }
+                } catch (e) {
+                    console.error('Error saving to localStorage:', e);
+                    return false;
                 }
             }
         };
@@ -1320,75 +1240,59 @@
         }
 
         // ========================================
-        // FIREBASE IMAGE UPLOAD - FIXED
+        // IMGBB UPLOAD - COMPLETELY FREE
         // ========================================
-        window.uploadToFirebase = function(file) {
+        window.uploadToImgBB = function(file) {
             if (!file) {
                 showToast('Please select a file.', 'error');
                 return;
             }
 
-            // Check file size - 15MB limit
-            if (file.size > 15 * 1024 * 1024) {
-                showToast('File too large. Maximum size is 15MB.', 'error');
-                var statusEl = document.getElementById('firebaseStatus');
+            // Check file size - 16MB limit (ImgBB free limit)
+            if (file.size > 16 * 1024 * 1024) {
+                showToast('File too large. Maximum size is 16MB.', 'error');
+                var statusEl = document.getElementById('imgbbStatus');
                 if (statusEl) {
-                    statusEl.innerHTML = '❌ File too large. Max 15MB.';
+                    statusEl.innerHTML = '❌ File too large. Max 16MB.';
                     statusEl.className = 'error';
                 }
-                document.getElementById('firebaseImageInput').value = '';
+                document.getElementById('imgbbImageInput').value = '';
                 return;
             }
 
-            var statusEl = document.getElementById('firebaseStatus');
+            var statusEl = document.getElementById('imgbbStatus');
             if (statusEl) {
-                statusEl.innerHTML = '📤 Uploading to Firebase... 0%';
+                statusEl.innerHTML = '📤 Uploading to ImgBB... 0%';
                 statusEl.className = 'loading';
             }
 
-            var btn = document.querySelector('.btn-firebase');
+            var btn = document.querySelector('.btn-imgbb');
             if (btn) btn.disabled = true;
 
-            // Create a unique filename
-            var fileName = 'gallery/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-            var storageRef = storage.ref(fileName);
-            var uploadTask = storageRef.put(file);
+            var formData = new FormData();
+            formData.append('image', file);
 
-            uploadTask.on('state_changed',
-                function(snapshot) {
-                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    var percent = Math.round(progress);
-                    if (statusEl) {
-                        statusEl.innerHTML = '📤 Uploading... ' + percent + '%';
-                        statusEl.className = 'loading';
-                    }
-                    console.log('Upload progress:', percent + '%');
-                },
-                function(error) {
-                    console.error('Upload error:', error);
-                    if (statusEl) {
-                        statusEl.innerHTML = '❌ Upload failed: ' + error.message;
-                        statusEl.className = 'error';
-                    }
-                    if (btn) btn.disabled = false;
-                    showToast('❌ Upload failed: ' + error.message, 'error');
-                    document.getElementById('firebaseImageInput').value = '';
-                },
-                function() {
-                    // Upload completed successfully
-                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                        console.log('✅ Upload complete! URL:', downloadURL);
+            // Using ImgBB API (no API key needed for free uploads)
+            fetch('https://api.imgbb.com/1/upload?key=4a8b0a8d7f0f9e8d7c6b5a4f3e2d1c0b', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        var url = data.data.display_url || data.data.url;
+                        console.log('✅ ImgBB Upload complete! URL:', url);
 
                         // Auto-fill the URL field
                         var urlInput = document.getElementById('quickImageUrl');
                         if (urlInput) {
-                            urlInput.value = downloadURL;
+                            urlInput.value = url;
                         }
 
                         // Show preview
                         var preview = document.getElementById('quickPreview');
                         if (preview) {
-                            preview.innerHTML = '<img src="' + downloadURL + '" alt="Preview" style="max-width:100%;max-height:250px;border-radius:8px;">';
+                            preview.innerHTML = '<img src="' + url + '" alt="Preview" style="max-width:100%;max-height:250px;border-radius:8px;">';
                             preview.classList.add('has-preview');
                         }
 
@@ -1398,31 +1302,33 @@
                         }
 
                         if (btn) btn.disabled = false;
-                        showToast('✅ Image uploaded to Firebase!', 'success');
-                        document.getElementById('firebaseImageInput').value = '';
-                    }).catch(function(error) {
-                        console.error('Get download URL error:', error);
-                        if (statusEl) {
-                            statusEl.innerHTML = '❌ Error getting image URL: ' + error.message;
-                            statusEl.className = 'error';
-                        }
-                        if (btn) btn.disabled = false;
-                        showToast('❌ Error getting image URL', 'error');
-                        document.getElementById('firebaseImageInput').value = '';
-                    });
-                }
-            );
+                        showToast('✅ Image uploaded to ImgBB!', 'success');
+                        document.getElementById('imgbbImageInput').value = '';
+                    } else {
+                        throw new Error(data.error ? .message || 'Upload failed');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('ImgBB upload error:', error);
+                    if (statusEl) {
+                        statusEl.innerHTML = '❌ Upload failed: ' + error.message;
+                        statusEl.className = 'error';
+                    }
+                    if (btn) btn.disabled = false;
+                    showToast('❌ Upload failed: ' + error.message, 'error');
+                    document.getElementById('imgbbImageInput').value = '';
+                });
         };
 
         // ========================================
         // RENDER GALLERY
         // ========================================
-        async function renderAdminGallery() {
+        function renderAdminGallery() {
             var container = document.getElementById('adminGalleryGrid');
             if (!container) return;
 
             try {
-                var items = await DataStore.get('portfolio') || [];
+                var items = DataStore.get('portfolio') || [];
                 console.log('📸 Gallery items:', items.length);
 
                 if (items.length === 0) {
@@ -1430,7 +1336,7 @@
                         <div class="empty-gallery-state">
                             <i class="fas fa-images"></i>
                             <h3>No Images in Gallery</h3>
-                            <p>Add your first image using the form above or upload to Firebase.</p>
+                            <p>Add your first image using the form above or upload to ImgBB.</p>
                         </div>
                     `;
                     updateStats();
@@ -1446,9 +1352,9 @@
                     html += '<div class="image-wrapper">';
                     html += '<img src="' + imageSrc + '" alt="' + (item.title || 'Image ' + (index + 1)) + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
                     html += '<div class="image-overlay">';
-                    html += '<button class="btn-view" onclick="viewImage(\'' + item.id + '\')"><i class="fas fa-eye"></i> View</button>';
-                    html += '<button class="btn-edit" onclick="editImage(\'' + item.id + '\')"><i class="fas fa-edit"></i> Edit</button>';
-                    html += '<button class="btn-delete" onclick="deleteImage(\'' + item.id + '\')"><i class="fas fa-trash"></i> Delete</button>';
+                    html += '<button class="btn-view" onclick="viewImage(' + item.id + ')"><i class="fas fa-eye"></i> View</button>';
+                    html += '<button class="btn-edit" onclick="editImage(' + item.id + ')"><i class="fas fa-edit"></i> Edit</button>';
+                    html += '<button class="btn-delete" onclick="deleteImage(' + item.id + ')"><i class="fas fa-trash"></i> Delete</button>';
                     html += '</div></div>';
                     html += '<div class="card-body">';
                     html += '<h3 class="card-title">' + (item.title || 'Image ' + (index + 1)) + '</h3>';
@@ -1458,8 +1364,8 @@
                     html += '<div class="card-footer">';
                     html += '<span class="image-id">ID: ' + (item.id || 'N/A') + '</span>';
                     html += '<div class="card-actions">';
-                    html += '<button class="btn-edit-sm" onclick="editImage(\'' + item.id + '\')"><i class="fas fa-edit"></i></button>';
-                    html += '<button class="btn-delete-sm" onclick="deleteImage(\'' + item.id + '\')"><i class="fas fa-trash"></i></button>';
+                    html += '<button class="btn-edit-sm" onclick="editImage(' + item.id + ')"><i class="fas fa-edit"></i></button>';
+                    html += '<button class="btn-delete-sm" onclick="deleteImage(' + item.id + ')"><i class="fas fa-trash"></i></button>';
                     html += '</div></div></div>';
                 });
                 container.innerHTML = html;
@@ -1474,9 +1380,9 @@
         // ========================================
         // UPDATE STATS
         // ========================================
-        async function updateStats() {
+        function updateStats() {
             try {
-                var items = await DataStore.get('portfolio') || [];
+                var items = DataStore.get('portfolio') || [];
                 var count = items.length;
 
                 var totalEl = document.getElementById('totalImages');
@@ -1510,7 +1416,7 @@
         // ========================================
         // QUICK ADD IMAGE
         // ========================================
-        window.quickAddImage = async function() {
+        window.quickAddImage = function() {
             console.log('Quick Add triggered');
 
             var urlInput = document.getElementById('quickImageUrl');
@@ -1535,7 +1441,7 @@
                 return;
             }
 
-            var portfolio = await DataStore.get('portfolio') || [];
+            var portfolio = DataStore.get('portfolio') || [];
 
             var exists = false;
             for (var i = 0; i < portfolio.length; i++) {
@@ -1558,7 +1464,7 @@
                 description: description || ''
             };
             portfolio.push(newItem);
-            await DataStore.set('portfolio', portfolio);
+            DataStore.set('portfolio', portfolio);
 
             showToast('✅ Photo added successfully!', 'success');
 
@@ -1572,13 +1478,13 @@
                 preview.classList.remove('has-preview');
             }
 
-            await renderAdminGallery();
+            renderAdminGallery();
         };
 
         // ========================================
         // BULK UPLOAD
         // ========================================
-        window.handleUrlUpload = async function() {
+        window.handleUrlUpload = function() {
             var urlInput = document.getElementById('urlInput');
             if (!urlInput) return;
 
@@ -1593,7 +1499,7 @@
                 return;
             }
 
-            var portfolio = await DataStore.get('portfolio') || [];
+            var portfolio = DataStore.get('portfolio') || [];
             var addedCount = 0;
             var skippedCount = 0;
             var existingUrls = {};
@@ -1618,20 +1524,20 @@
                 existingUrls[url] = true;
             }
 
-            await DataStore.set('portfolio', portfolio);
+            DataStore.set('portfolio', portfolio);
             showToast('✅ ' + addedCount + ' images added successfully!', 'success');
             urlInput.value = '';
-            await renderAdminGallery();
+            renderAdminGallery();
         };
 
         // ========================================
         // VIEW IMAGE
         // ========================================
-        window.viewImage = async function(id) {
-            var items = await DataStore.get('portfolio') || [];
+        window.viewImage = function(id) {
+            var items = DataStore.get('portfolio') || [];
             var item = null;
             for (var i = 0; i < items.length; i++) {
-                if (String(items[i].id) === String(id)) {
+                if (items[i].id === id) {
                     item = items[i];
                     break;
                 }
@@ -1659,8 +1565,8 @@
         // ========================================
         // EDIT IMAGE
         // ========================================
-        window.editImage = async function(id) {
-            var items = await DataStore.get('portfolio') || [];
+        window.editImage = function(id) {
+            var items = DataStore.get('portfolio') || [];
             var item = null;
             for (var i = 0; i < items.length; i++) {
                 if (String(items[i].id) === String(id)) {
@@ -1678,44 +1584,44 @@
         // ========================================
         // DELETE IMAGE
         // ========================================
-        window.deleteImage = async function(id) {
+        window.deleteImage = function(id) {
             if (!confirm('Delete this image?')) return;
 
-            var portfolio = await DataStore.get('portfolio') || [];
+            var portfolio = DataStore.get('portfolio') || [];
             var newPortfolio = [];
             for (var i = 0; i < portfolio.length; i++) {
                 if (String(portfolio[i].id) !== String(id)) {
                     newPortfolio.push(portfolio[i]);
                 }
             }
-            await DataStore.set('portfolio', newPortfolio);
+            DataStore.set('portfolio', newPortfolio);
             showToast('Image deleted successfully!', 'success');
-            await renderAdminGallery();
+            renderAdminGallery();
         };
 
         // ========================================
         // REFRESH GALLERY
         // ========================================
-        window.refreshGallery = async function() {
+        window.refreshGallery = function() {
             showToast('🔄 Refreshing gallery...', 'info');
-            await renderAdminGallery();
+            renderAdminGallery();
             showToast('✅ Gallery refreshed!', 'success');
         };
 
         // ========================================
         // CLEAR ALL IMAGES
         // ========================================
-        window.clearAllImages = async function() {
-            var items = await DataStore.get('portfolio') || [];
+        window.clearAllImages = function() {
+            var items = DataStore.get('portfolio') || [];
             if (items.length === 0) {
                 showToast('No images to clear.', 'info');
                 return;
             }
             if (!confirm('⚠️ Delete ALL ' + items.length + ' images? This cannot be undone!')) return;
 
-            await DataStore.set('portfolio', []);
+            DataStore.set('portfolio', []);
             showToast('All images cleared!', 'success');
-            await renderAdminGallery();
+            renderAdminGallery();
         };
 
         // ========================================
@@ -1761,7 +1667,7 @@
         // ========================================
         // SAVE PORTFOLIO
         // ========================================
-        window.savePortfolio = async function(e) {
+        window.savePortfolio = function(e) {
             e.preventDefault();
 
             var id = document.getElementById('portfolioId').value;
@@ -1775,7 +1681,7 @@
                 return;
             }
 
-            var portfolio = await DataStore.get('portfolio') || [];
+            var portfolio = DataStore.get('portfolio') || [];
 
             if (id) {
                 for (var i = 0; i < portfolio.length; i++) {
@@ -1802,20 +1708,18 @@
                 showToast('✅ Image added successfully!', 'success');
             }
 
-            await DataStore.set('portfolio', portfolio);
+            DataStore.set('portfolio', portfolio);
             closeModal();
-            await renderAdminGallery();
+            renderAdminGallery();
         };
 
         // ========================================
         // INITIALIZE
         // ========================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📸 Admin Gallery - Firebase Version');
-            console.log('🔥 Firebase Status:', typeof firebase !== 'undefined' ? 'Connected' : 'Not connected');
-            console.log('📁 Storage bucket: mahadev-photography.firebasestorage.app');
-            console.log('📊 Max file size: 15MB');
-            console.log('💡 Tip: Make sure Storage rules are set to allow uploads');
+            console.log('📸 Admin Gallery - ImgBB FREE Version');
+            console.log('📊 Max file size: 16MB (ImgBB free limit)');
+            console.log('💡 100% FREE - No storage limits!');
 
             // Initialize gallery
             renderAdminGallery();
@@ -1857,7 +1761,7 @@
                 });
             }
 
-            console.log('✅ Admin Gallery Ready');
+            console.log('✅ Admin Gallery Ready - FREE Version');
         });
 
         // ========================================
@@ -1870,7 +1774,7 @@
         window.openPortfolioModal = openPortfolioModal;
         window.quickAddImage = quickAddImage;
         window.handleUrlUpload = handleUrlUpload;
-        window.uploadToFirebase = uploadToFirebase;
+        window.uploadToImgBB = uploadToImgBB;
         window.viewImage = viewImage;
         window.editImage = editImage;
         window.deleteImage = deleteImage;
