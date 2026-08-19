@@ -1,20 +1,43 @@
 {
-    "version": 2,
-    "name": "mahadev-photography",
-    "headers": [{
-        "source": "/(.*)",
-        "headers": [{
-                "key": "Cache-Control",
-                "value": "no-cache, no-store, must-revalidate"
-            },
-            {
-                "key": "Pragma",
-                "value": "no-cache"
-            },
-            {
-                "key": "Expires",
-                "value": "0"
-            }
-        ]
-    }]
+  "version": 2,
+  "name": "mahadev-photography",
+  "builds": [
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "admin/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "css/*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/*.js",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }

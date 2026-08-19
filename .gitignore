@@ -16,10 +16,17 @@ desktop.ini
 # Vercel
 .vercel/
 
+# Node modules
+node_modules/
+
 # Temporary files
 *.tmp
 *.temp
 *.cache
 
-# Local storage
+# Local storage files
 *.localstorage
+
+# Environment files
+.env
+.env.local

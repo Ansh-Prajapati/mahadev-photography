@@ -214,11 +214,45 @@ function uploadToFirebase(file) {
 // INITIAL DATA
 // ========================================
 
-function initializeData() {
-    // Data is now stored in Firebase, but we keep localStorage as fallback
-    console.log('📦 Using Firebase for data storage:', useFirebase);
-}
+// ========================================
+// INITIAL DATA - UPDATED CATEGORIES
+// ========================================
 
+function initializeData() {
+    if (!localStorage.getItem('portfolio')) {
+        var portfolio = [{
+                id: 1,
+                title: 'Beautiful Wedding',
+                category: 'wedding',
+                image: 'https://images.unsplash.com/photo-1511798616182-98b7d9a7e2cc?w=600&h=400&fit=crop',
+                description: 'Elegant wedding photography'
+            },
+            {
+                id: 2,
+                title: 'Pre Wedding Shoot',
+                category: 'prewedding',
+                image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=400&fit=crop',
+                description: 'Romantic pre-wedding sessions'
+            },
+            {
+                id: 3,
+                title: 'Engagement Ceremony',
+                category: 'engagement',
+                image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop',
+                description: 'Beautiful engagement moments'
+            },
+            {
+                id: 4,
+                title: 'Maternity Shoot',
+                category: 'maternity',
+                image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&h=400&fit=crop',
+                description: 'Capturing the beauty of motherhood'
+            }
+        ];
+        DataStore.set('portfolio', portfolio);
+    }
+    // ... rest of the function
+}
 // ========================================
 // ADMIN AUTHENTICATION
 // ========================================
@@ -1112,6 +1146,40 @@ window.deleteSubmission = function(id) {
 // ========================================
 // ADMIN GALLERY
 // ========================================
+// ========================================
+// UPDATE STATS - UPDATED CATEGORIES
+// ========================================
+
+function updateStats() {
+    var items = DataStore.get('portfolio');
+    var count = items ? items.length : 0;
+
+    var totalEl = document.getElementById('totalImages');
+    if (totalEl) totalEl.textContent = count;
+
+    var weddingCount = 0,
+        preweddingCount = 0,
+        engagementCount = 0,
+        maternityCount = 0;
+    if (items) {
+        items.forEach(function(item) {
+            if (item.category === 'wedding') weddingCount++;
+            else if (item.category === 'prewedding') preweddingCount++;
+            else if (item.category === 'engagement') engagementCount++;
+            else if (item.category === 'maternity') maternityCount++;
+        });
+    }
+
+    var weddingEl = document.getElementById('weddingCount');
+    var preweddingEl = document.getElementById('preweddingCount');
+    var engagementEl = document.getElementById('engagementCount');
+    var maternityEl = document.getElementById('maternityCount');
+
+    if (weddingEl) weddingEl.textContent = weddingCount;
+    if (preweddingEl) preweddingEl.textContent = preweddingCount;
+    if (engagementEl) engagementEl.textContent = engagementCount;
+    if (maternityEl) maternityEl.textContent = maternityCount;
+}
 
 function initAdminGallery() {
     console.log('📸 Initializing Admin Gallery...');
@@ -1253,6 +1321,7 @@ function updateStats() {
     if (portraitEl) portraitEl.textContent = portraitCount;
     if (natureEl) natureEl.textContent = natureCount;
 }
+
 
 // ========================================
 // QUICK ADD IMAGE
@@ -1500,6 +1569,192 @@ function savePortfolio(e) {
     closeModal();
     renderAdminGallery();
 }
+
+// ========================================
+// PARTICLE SYSTEM - 3D BACKGROUND
+// ========================================
+(function() {
+    const canvas = document.getElementById('particleCanvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    const particleCount = 80;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.size = Math.random() * 3 + 1;
+            this.speedX = (Math.random() - 0.5) * 0.5;
+            this.speedY = (Math.random() - 0.5) * 0.5;
+            this.opacity = Math.random() * 0.5 + 0.1;
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            if (this.x < 0 || this.x > width) this.speedX *= -1;
+            if (this.y < 0 || this.y > height) this.speedY *= -1;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+            ctx.fill();
+        }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+    }
+
+    function drawLines() {
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 150) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = `rgba(212, 175, 55, ${0.05 * (1 - distance / 150)})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        drawLines();
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+})();
+
+// ========================================
+// NAVIGATION
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('navMenu');
+    const navbar = document.getElementById('navbar');
+
+    if (hamburger && navMenu) {
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        navMenu.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+    }
+
+    if (navbar) {
+        window.addEventListener('scroll', function() {
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+    }
+
+    // ========================================
+    // HERO STATS ANIMATION
+    // ========================================
+    const statNumbers = document.querySelectorAll('.stat-number');
+    if (statNumbers.length) {
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const target = parseInt(el.dataset.count);
+                    animateCounter(el, target);
+                    observer.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        statNumbers.forEach(function(el) {
+            observer.observe(el);
+        });
+    }
+
+    function animateCounter(el, target) {
+        let current = 0;
+        const increment = Math.ceil(target / 60);
+        const timer = setInterval(function() {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            el.textContent = current;
+        }, 25);
+    }
+
+    // ========================================
+    // LOAD GALLERY PREVIEW
+    // ========================================
+    loadGalleryPreview();
+
+    function loadGalleryPreview() {
+        const container = document.getElementById('galleryPreview');
+        if (!container) return;
+
+        let items = [];
+        try {
+            const data = localStorage.getItem('portfolio');
+            if (data) {
+                items = JSON.parse(data).slice(0, 4);
+            }
+        } catch (e) {}
+
+        if (items.length === 0) {
+            items = [
+                { image: 'https://images.unsplash.com/photo-1511798616182-98b7d9a7e2cc?w=600&h=400&fit=crop', title: 'Wedding', description: 'Beautiful wedding' },
+                { image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=400&fit=crop', title: 'Pre Wedding', description: 'Romantic pre-wedding' },
+                { image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop', title: 'Engagement', description: 'Engagement ceremony' },
+                { image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&h=400&fit=crop', title: 'Maternity', description: 'Beautiful maternity shoot' }
+            ];
+        }
+
+        let html = '';
+        items.forEach(function(item) {
+            const imageSrc = item.image || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
+            html += '<div class="gallery-item-preview">';
+            html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy">';
+            html += '<div class="preview-overlay">';
+            html += '<h4>' + item.title + '</h4>';
+            html += '<p>' + (item.description || '') + '</p>';
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+    }
+});
 
 // ========================================
 // MOBILE FORCE RELOAD
