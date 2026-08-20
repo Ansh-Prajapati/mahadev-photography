@@ -462,6 +462,15 @@
         // ========================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📸 Gallery page loaded');
+
+            var hamburger = document.getElementById('hamburger');
+            var navMenu = document.getElementById('navMenu');
+            if (hamburger && navMenu) {
+                hamburger.addEventListener('click', function() {
+                    hamburger.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+            }
             
             var filterBtns = document.querySelectorAll('.filter-btn');
             filterBtns.forEach(function(btn) {

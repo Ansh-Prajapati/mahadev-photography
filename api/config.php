@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'mahadev_photography');
 define('DB_USER', 'root');      // ← CHANGE THIS
-define('DB_PASS', '');          // ← CHANGE THIS
+define('DB_PASS', '1234567');          // ← CHANGE THIS
 
 function getDB() {
     try {

@@ -35,7 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category = $data['category'] ?? 'custom';
     $image_url = $data['image_url'] ?? '';
     $description = $data['description'] ?? '';
-    $featured = $data['featured'] ?? false;
+    // PDO serializes false as an empty string, which MySQL rejects for a
+    // BOOLEAN/TINYINT column in strict mode. Always send an explicit integer.
+    $featured = !empty($data['featured']) ? 1 : 0;
     
     if (empty($title) || empty($image_url)) {
         sendResponse(['error' => 'Title and image URL are required'], 400);
@@ -70,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $category = $data['category'] ?? 'custom';
     $image_url = $data['image_url'] ?? '';
     $description = $data['description'] ?? '';
-    $featured = $data['featured'] ?? false;
+    $featured = !empty($data['featured']) ? 1 : 0;
     
     $stmt = $pdo->prepare("
         UPDATE gallery 

@@ -9,107 +9,21 @@ const APP_VERSION = '6.0.0';
 // CHECK FIREBASE STATUS
 // ========================================
 
-const useFirebase = typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0;
-console.log('🔥 Firebase status:', useFirebase ? 'Connected ✅' : 'Not connected ❌');
+const useFirebase = false;
 
 // ========================================
 // DATA STORE - FIREBASE + LOCALSTORAGE
 // ========================================
 
 const DataStore = {
-    // GET data from Firebase or localStorage
-    get: async function(key, defaultVal = []) {
-        if (useFirebase) {
-            try {
-                // Map local keys to Firestore collection names
-                const collectionMap = {
-                    'portfolio': 'gallery',
-                    'packages': 'packages',
-                    'submissions': 'submissions'
-                };
-
-                const collectionName = collectionMap[key] || key;
-                const snapshot = await db.collection(collectionName).orderBy('createdAt', 'desc').get();
-
-                if (snapshot.empty) {
-                    console.log('📭 No data in Firebase for:', collectionName);
-                    return defaultVal;
-                }
-
-                const items = [];
-                snapshot.forEach(doc => {
-                    items.push({ id: doc.id, ...doc.data() });
-                });
-
-                console.log('🔥 Firebase loaded:', collectionName, items.length);
-                return items;
-            } catch (error) {
-                console.error('Firebase get error:', error);
-                // Fallback to localStorage
-                return this.getLocal(key, defaultVal);
-            }
-        } else {
-            console.log('💾 Using localStorage fallback');
-            return this.getLocal(key, defaultVal);
-        }
+    // This site reads data during rendering, so its storage contract must be synchronous.
+    // A server API can be added later without turning public-page rendering into promises.
+    get: function(key, defaultVal = []) {
+        return this.getLocal(key, defaultVal);
     },
 
-    // SET data to Firebase or localStorage
-    set: async function(key, data) {
-        if (useFirebase) {
-            try {
-                const collectionMap = {
-                    'portfolio': 'gallery',
-                    'packages': 'packages',
-                    'submissions': 'submissions'
-                };
-
-                const collectionName = collectionMap[key] || key;
-
-                // For each item, save to Firestore
-                for (const item of data) {
-                    // If item has an id, use it, otherwise create new
-                    if (item.id) {
-                        // Check if document exists
-                        const docRef = db.collection(collectionName).doc(String(item.id));
-                        const docSnap = await docRef.get();
-
-                        if (docSnap.exists) {
-                            // Update existing
-                            await docRef.update({
-                                ...item,
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        } else {
-                            // Create new with same ID
-                            await docRef.set({
-                                ...item,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }
-                    } else {
-                        // Generate a new ID
-                        const docRef = db.collection(collectionName).doc();
-                        await docRef.set({
-                            ...item,
-                            id: docRef.id,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                }
-
-                console.log('🔥 Firebase saved:', collectionName, data.length);
-                return true;
-            } catch (error) {
-                console.error('Firebase set error:', error);
-                // Fallback to localStorage
-                return this.setLocal(key, data);
-            }
-        } else {
-            return this.setLocal(key, data);
-        }
+    set: function(key, data) {
+        return this.setLocal(key, data);
     },
 
     // LocalStorage methods (fallback)
@@ -146,6 +60,10 @@ window.DataStore = DataStore;
 function uploadToFirebase(file) {
     if (!file) {
         showToast('Please select a file.', 'error');
+        return;
+    }
+    if (typeof storage === 'undefined' || !storage.ref) {
+        showToast('Image uploads are not configured yet. Please use an image URL.', 'info');
         return;
     }
 
@@ -251,7 +169,14 @@ function initializeData() {
         ];
         DataStore.set('portfolio', portfolio);
     }
-    // ... rest of the function
+    if (!localStorage.getItem('packages')) {
+        DataStore.set('packages', [
+            { id: 1, name: 'Classic', price: 15000, features: ['4 hours of coverage', '150 edited photos', 'Online gallery'], featured: false },
+            { id: 2, name: 'Signature', price: 30000, features: ['Full-day coverage', '400 edited photos', 'Cinematic highlight reel', 'Premium album'], featured: true },
+            { id: 3, name: 'Heirloom', price: 50000, features: ['Two-day coverage', '700 edited photos', 'Cinematic film', 'Premium album & prints'], featured: false }
+        ]);
+    }
+    if (!localStorage.getItem('submissions')) DataStore.set('submissions', []);
 }
 // ========================================
 // ADMIN AUTHENTICATION
@@ -271,6 +196,8 @@ function loginAdmin(email, password) {
 
 function logoutAdmin() {
     localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
     window.location.href = '../index.html';
 }
 
@@ -1765,19 +1692,39 @@ function isMobile() {
 }
 
 function forceMobileUpdate() {
-    if (!isMobile()) return;
+    // Intentionally retained as a no-op for backwards compatibility.
+    // Reloading a page because its gallery is empty caused an endless mobile loop.
+}
 
-    var lastCheck = localStorage.getItem('mobile_check');
-    var now = Date.now();
+function initImmersiveMotion() {
+    var motionCards = document.querySelectorAll('.service-card, .review-card, .package-card, .contact-info-card, .contact-form-side');
+    if (!window.matchMedia('(pointer: fine)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    if (!lastCheck || (now - parseInt(lastCheck)) > 300000) {
-        localStorage.setItem('mobile_check', now);
-        var portfolio = localStorage.getItem('portfolio');
-        if (!portfolio || portfolio === '[]' || portfolio === 'null') {
-            console.log('📱 Mobile: No data found, reloading...');
-            window.location.reload(true);
-        }
-    }
+    motionCards.forEach(function(card) {
+        card.addEventListener('pointermove', function(event) {
+            var bounds = card.getBoundingClientRect();
+            var x = (event.clientX - bounds.left) / bounds.width - 0.5;
+            var y = (event.clientY - bounds.top) / bounds.height - 0.5;
+            card.style.transform = 'perspective(900px) rotateX(' + (-y * 7) + 'deg) rotateY(' + (x * 8) + 'deg) translateY(-7px)';
+        });
+        card.addEventListener('pointerleave', function() { card.style.transform = ''; });
+    });
+
+    var revealTargets = document.querySelectorAll('.section-header, .service-card, .gallery-item-preview, .review-card, .package-card, .contact-info-card, .contact-form-side');
+    if (!('IntersectionObserver' in window)) return;
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: .12 });
+    revealTargets.forEach(function(target, index) {
+        target.classList.add('reveal');
+        target.style.transitionDelay = Math.min(index % 4, 3) * 70 + 'ms';
+        observer.observe(target);
+    });
 }
 
 // ========================================
@@ -1795,6 +1742,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initLightbox();
     initContactForm();
     initAdminPanel();
+    initImmersiveMotion();
     forceMobileUpdate();
     console.log('✅ All systems initialized');
 });

@@ -133,11 +133,11 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label><i class="fas fa-envelope"></i> Email Address</label>
-                    <input type="email" id="email" placeholder="admin@mahadevphotography.com">
+                    <input type="email" id="email" placeholder="admin@mahadevphotography.com" autocomplete="username" required>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="password" placeholder="Enter password">
+                    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" required>
                 </div>
                 <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Login</button>
             </form>
@@ -185,6 +185,9 @@
                 if (result.success) {
                     localStorage.setItem('adminToken', result.token);
                     localStorage.setItem('adminUser', JSON.stringify(result.user));
+                    // Existing admin pages use this flag, while newer pages
+                    // use adminToken. Set both during the transition.
+                    localStorage.setItem('adminAuth', 'true');
                     showToast('Login successful! Redirecting...', 'success');
                     setTimeout(function() {
                         window.location.href = 'index.html';

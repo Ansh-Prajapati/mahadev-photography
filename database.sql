@@ -63,9 +63,10 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default admin (password: admin123)
+-- Default admin: admin@mahadevphotography.com / admin123
+-- The first successful login upgrades this legacy seed value to a secure PHP password hash.
 INSERT INTO users (name, email, password, role) VALUES 
-('Admin', 'admin@Brijesh123.com', 'Brijesh@123', 'admin');
+('Admin', 'admin@mahadevphotography.com', 'admin123', 'admin');
 
 -- ========================================
 -- DROP AND RECREATE SETTINGS TABLE
