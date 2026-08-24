@@ -95,6 +95,11 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 20px rgba(212,175,55,0.3);
         }
+        .login-box .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
         .login-footer {
             text-align: center;
             margin-top: 20px;
@@ -113,13 +118,47 @@
             font-weight: 600;
             z-index: 9999;
             animation: slideIn 0.5s ease;
+            max-width: 400px;
         }
         .toast.success { background: #2ecc71; color: #0A0A0A; }
         .toast.error { background: #e74c3c; color: white; }
+        .toast.info { background: #3498db; color: white; }
+        .toast .close-toast {
+            margin-left: 10px;
+            cursor: pointer;
+            float: right;
+            font-weight: bold;
+        }
         @keyframes slideIn {
             from { transform: translateX(100px); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        .login-status {
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+        .login-status.error {
+            display: block;
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+        .login-status.success {
+            display: block;
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+        .login-status.loading {
+            display: block;
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+        .login-status i { margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -130,16 +169,19 @@
                 <h2>Admin Panel</h2>
                 <p>Mahadev Photography</p>
             </div>
+            
+            <div id="loginStatus" class="login-status"></div>
+            
             <form id="loginForm">
                 <div class="form-group">
                     <label><i class="fas fa-envelope"></i> Email Address</label>
-                    <input type="email" id="email" placeholder="admin@mahadevphotography.com" autocomplete="username" required>
+                    <input type="email" id="email" placeholder="admin@mahadevphotography.com" value="admin@mahadevphotography.com" autocomplete="username" required>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" required>
+                    <input type="password" id="password" placeholder="Enter password" value="admin123" autocomplete="current-password" required>
                 </div>
-                <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Login</button>
+                <button type="submit" class="btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
             </form>
             <div class="login-footer">
                 <i class="fas fa-lock"></i> Secure Admin Access
@@ -148,57 +190,90 @@
     </div>
 
     <script>
-        const API_URL = '../api/auth.php';
-
+        const API_URL = '/api/auth.py';
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('loginStatus');
+            status.className = 'login-status ' + type;
+            status.innerHTML = message;
+        }
+        
         function showToast(message, type) {
             var existing = document.querySelector('.toast');
             if (existing) existing.remove();
+            
             var toast = document.createElement('div');
             toast.className = 'toast ' + type;
-            toast.innerHTML = message;
+            toast.innerHTML = message + ' <span class="close-toast" onclick="this.parentElement.remove()">&times;</span>';
             document.body.appendChild(toast);
+            
             setTimeout(function() {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateX(100px)';
                 setTimeout(function() { toast.remove(); }, 500);
-            }, 4000);
+            }, 5000);
         }
-
+        
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
             var email = document.getElementById('email').value.trim();
             var password = document.getElementById('password').value.trim();
-
+            var btn = document.getElementById('loginBtn');
+            
             if (!email || !password) {
-                showToast('Please enter email and password.', 'error');
+                showStatus('<i class="fas fa-exclamation-circle"></i> Please enter email and password.', 'error');
                 return;
             }
-
+            
+            // Show loading
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+            showStatus('<i class="fas fa-spinner fa-spin"></i> Connecting to server...', 'loading');
+            
             try {
+                console.log('🔐 Attempting login for:', email);
+                
                 var response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ email, password })
                 });
+                
                 var result = await response.json();
-
+                console.log('📨 Response:', result);
+                
                 if (result.success) {
                     localStorage.setItem('adminToken', result.token);
                     localStorage.setItem('adminUser', JSON.stringify(result.user));
-                    // Existing admin pages use this flag, while newer pages
-                    // use adminToken. Set both during the transition.
                     localStorage.setItem('adminAuth', 'true');
-                    showToast('Login successful! Redirecting...', 'success');
+                    
+                    showStatus('<i class="fas fa-check-circle"></i> Login successful! Redirecting...', 'success');
+                    showToast('✅ Login successful! Redirecting...', 'success');
+                    
                     setTimeout(function() {
                         window.location.href = 'index.html';
                     }, 1000);
                 } else {
-                    showToast(result.error || 'Invalid credentials', 'error');
+                    showStatus('<i class="fas fa-exclamation-circle"></i> ' + (result.error || 'Invalid credentials'), 'error');
+                    showToast('❌ ' + (result.error || 'Login failed'), 'error');
                 }
             } catch (error) {
-                showToast('Connection error. Please try again.', 'error');
+                console.error('❌ Login error:', error);
+                showStatus('<i class="fas fa-exclamation-circle"></i> Connection error: ' + error.message, 'error');
+                showToast('❌ Cannot connect to server. Make sure the Flask app is running.', 'error');
             }
+            
+            // Reset button
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
         });
+        
+        // Pre-fill credentials for testing
+        console.log('🔐 Admin Login: admin@mahadevphotography.com / admin123');
     </script>
 </body>
 </html>

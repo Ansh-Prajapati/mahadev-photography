@@ -305,25 +305,15 @@
             color: var(--gold);
             font-size: 1.1rem;
         }
-        /* Footer Social */
         
-        .footer .social-links a.instagram-link {
-            background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
-            color: white;
-        }
-        
-        .footer .social-links a.instagram-link:hover {
-            transform: translateY(-3px) scale(1.1);
-        }
-        
-        @media (max-width:1024px) {
+        @media (max-width: 1024px) {
             .contact-grid {
                 grid-template-columns: 1fr;
                 gap: 30px;
             }
         }
         
-        @media (max-width:768px) {
+        @media (max-width: 768px) {
             .contact-info-side {
                 grid-template-columns: 1fr;
             }
@@ -363,7 +353,7 @@
             }
         }
         
-        @media (max-width:480px) {
+        @media (max-width: 480px) {
             .contact-form-side {
                 padding: 18px;
             }
@@ -469,10 +459,9 @@
                                 <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" class="youtube" title="YouTube">
                                     <i class="fab fa-youtube"></i>
                                 </a>
-                                <a href="https://www.instagram.com/mahadev_photography1921?igsh=bWc3bTlyOTJ5MmJp" target="_blank" class="instagram" title="Instagram">
+                                <a href="https://www.instagram.com/mahadev_photography1921" target="_blank" class="instagram" title="Instagram">
                                     <i class="fab fa-instagram"></i>
                                 </a>
-
                             </div>
                             <p style="margin-top:8px;font-size:0.8rem;color:#7f8c8d;">Follow us for daily updates!</p>
                         </div>
@@ -487,17 +476,17 @@
                         <p>Fill in the details below and we'll get back to you within 24 hours.</p>
                     </div>
 
-                    <form id="contactForm" class="contact-form" action="https://formspree.io/f/mkodknzq" method="POST">
+                    <form id="contactForm" class="contact-form">
                         <div id="formStatus" class="form-status"></div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Your Name <span class="required">*</span></label>
-                                <input type="text" id="name" name="name" placeholder="Enter your full name" />
+                                <input type="text" id="name" name="name" placeholder="Enter your full name" required />
                             </div>
                             <div class="form-group">
                                 <label>Email Address <span class="required">*</span></label>
-                                <input type="email" id="email" name="email" placeholder="Enter your email" />
+                                <input type="email" id="email" name="email" placeholder="Enter your email" required />
                             </div>
                         </div>
 
@@ -508,23 +497,20 @@
 
                         <div class="form-group">
                             <label>Service Interested In <span class="required">*</span></label>
-                            <select id="service" name="service">
-    <option value="">Select a service</option>
-    <option value="wedding">Wedding Photography</option>
-    <option value="prewedding">Pre-Wedding Photography</option>
-    <option value="engagement">Engagement Photography</option>
-    <option value="maternity">Maternity Shoot</option>
-    <option value="other">Other</option>
-</select>
+                            <select id="service" name="service" required>
+                                <option value="">Select a service</option>
+                                <option value="wedding">Wedding Photography</option>
+                                <option value="prewedding">Pre-Wedding Photography</option>
+                                <option value="engagement">Engagement Photography</option>
+                                <option value="maternity">Maternity Shoot</option>
+                                <option value="other">Other</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
                             <label>Your Message <span class="required">*</span></label>
-                            <textarea id="message" name="message" rows="5" placeholder="Tell us about your requirements..."></textarea>
+                            <textarea id="message" name="message" rows="5" placeholder="Tell us about your requirements..." required></textarea>
                         </div>
-
-                        <input type="hidden" name="_subject" value="New Contact Form Submission - Mahadev Photography" />
-                        <input type="hidden" name="_next" value="https://mahadev-photography-kja4.vercel.app/contact.html" />
 
                         <button type="submit" class="btn-submit" id="submitBtn">
                             <span class="btn-text"><i class="fas fa-paper-plane"></i> Send Message</span>
@@ -560,7 +546,6 @@
                         <a href="#" target="_blank" title="Instagram" style="background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
                             <i class="fab fa-instagram"></i>
                         </a>
-
                         <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" title="YouTube" style="background:#FF0000;">
                             <i class="fab fa-youtube"></i>
                         </a>

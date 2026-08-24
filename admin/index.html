@@ -126,6 +126,11 @@
             color: white;
         }
         
+        .badge-replied {
+            background: #3498db;
+            color: white;
+        }
+        
         .table-header {
             display: flex;
             justify-content: space-between;
@@ -227,7 +232,7 @@
                 <h1><i class="fas fa-dashboard"></i> Dashboard</h1>
                 <div class="admin-user">
                     <div class="user-info">
-                        <div class="user-name">Admin</div>
+                        <div class="user-name" id="adminName">Admin</div>
                         <div class="user-role">Administrator</div>
                     </div>
                     <div class="user-avatar">A</div>
@@ -271,55 +276,19 @@
                             <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody id="recentSubmissions"></tbody>
+                    <tbody id="recentSubmissions">
+                        <tr>
+                            <td colspan="4" style="text-align:center;color:#666;padding:30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </main>
     </div>
 
     <script src="../js/script.js"></script>
-    <script>
-        const API_URL = '../api/gallery.php';
-        const DASHBOARD_API = '../api/dashboard.php';
-
-        function loadDashboard() {
-            fetch(DASHBOARD_API)
-                .then(r => r.json())
-                .then(result => {
-                    if (result.success) {
-                        const data = result.data;
-                        document.getElementById('statPortfolio').textContent = data.total_images || 0;
-                        document.getElementById('statPackages').textContent = data.total_packages || 0;
-                        document.getElementById('statSubmissions').textContent = data.total_submissions || 0;
-                        document.getElementById('statRevenue').textContent = '₹' + (data.total_revenue || 0).toLocaleString('en-IN');
-
-                        const recentTable = document.getElementById('recentSubmissions');
-                        if (data.recent_submissions && data.recent_submissions.length > 0) {
-                            let html = '';
-                            data.recent_submissions.forEach(function(s) {
-                                const statusClass = s.status === 'new' ? 'badge-new' : 'badge-read';
-                                const dateText = s.created_at ? new Date(s.created_at).toLocaleString() : '';
-                                html += '<tr><td><strong>' + (s.name || 'Unknown') + '</strong></td><td>' + (s.email || 'N/A') + '</td><td><span class="badge ' + statusClass + '">' + (s.status || 'new') + '</span></td><td style="color:#888;">' + dateText + '</td></tr>';
-                            });
-                            recentTable.innerHTML = html;
-                        } else {
-                            recentTable.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:30px;">No submissions yet.</td></tr>';
-                        }
-                    }
-                })
-                .catch(() => {
-                    document.getElementById('recentSubmissions').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:30px;">Error loading data.</td></tr>';
-                });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!localStorage.getItem('adminToken')) {
-                window.location.href = 'login.html';
-                return;
-            }
-            loadDashboard();
-        });
-    </script>
 </body>
 
 </html>

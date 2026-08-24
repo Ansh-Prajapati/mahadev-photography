@@ -223,7 +223,6 @@
             </div>
 
             <div class="gallery-masonry" id="galleryMasonry">
-                <!-- Loaded dynamically -->
                 <div class="empty-gallery-msg">
                     <i class="fas fa-spinner fa-spin"></i>
                     <p>Loading images...</p>
@@ -249,7 +248,7 @@
                         <a href="https://www.youtube.com/@mahadev_photography1921" target="_blank" style="background:#FF0000;">
                             <i class="fab fa-youtube"></i>
                         </a>
-                        <a href="https://www.instagram.com/mahadev_photography1921?igsh=bWc3bTlyOTJ5MmJp" target="_blank" style="background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
+                        <a href="https://www.instagram.com/mahadev_photography1921" target="_blank" style="background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
                             <i class="fab fa-instagram"></i>
                         </a>
                         <a href="#" target="_blank" style="background:#1877F2;">
@@ -294,200 +293,6 @@
         </div>
     </footer>
 
-    <script>
-        // ========================================
-        // API CONFIGURATION
-        // ========================================
-        // Try MySQL API first, fallback to localStorage
-        const API_URL = 'api/gallery.php';
-        const USE_API = true;
-
-        // ========================================
-        // DATA STORE (localStorage fallback)
-        // ========================================
-        const DataStore = {
-            get: function(key, defaultVal = []) {
-                try {
-                    const data = localStorage.getItem(key);
-                    return data ? JSON.parse(data) : defaultVal;
-                } catch (e) {
-                    return defaultVal;
-                }
-            }
-        };
-
-        // ========================================
-        // LIGHTBOX
-        // ========================================
-        function initLightbox() {
-            var lightbox = document.getElementById('lightbox');
-            if (!lightbox) return;
-
-            var closeBtn = document.querySelector('.close-lightbox');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', closeLightbox);
-            }
-            
-            lightbox.addEventListener('click', function(e) {
-                if (e.target === lightbox) closeLightbox();
-            });
-            
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') closeLightbox();
-            });
-        }
-
-        function openLightbox(src, caption) {
-            var lightbox = document.getElementById('lightbox');
-            var img = document.getElementById('lightboxImg');
-            var cap = document.getElementById('lightboxCaption');
-            if (lightbox && img) {
-                img.src = src;
-                if (cap) cap.textContent = caption || '';
-                lightbox.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeLightbox() {
-            var lightbox = document.getElementById('lightbox');
-            if (lightbox) {
-                lightbox.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        }
-
-        // ========================================
-        // LOAD GALLERY - TRY API FIRST, THEN LOCALSTORAGE
-        // ========================================
-        var currentFilter = 'all';
-
-        function loadGallery() {
-            var container = document.getElementById('galleryMasonry');
-            if (!container) return;
-
-            // Try loading from MySQL API first
-            if (USE_API) {
-                fetch(API_URL)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('API not available');
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        if (result.success && result.data && result.data.length > 0) {
-                            console.log('📸 Loading from MySQL API:', result.data.length);
-                            renderGalleryItems(result.data);
-                            return;
-                        }
-                        // If API returns empty, try localStorage
-                        loadFromLocalStorage(container);
-                    })
-                    .catch(function(error) {
-                        console.log('API not available, using localStorage:', error);
-                        loadFromLocalStorage(container);
-                    });
-            } else {
-                loadFromLocalStorage(container);
-            }
-        }
-
-        function loadFromLocalStorage(container) {
-            console.log('📸 Loading from localStorage');
-            var items = DataStore.get('portfolio') || [];
-            
-            if (items.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-gallery-msg">
-                        <i class="fas fa-images"></i>
-                        <p style="font-size:1.2rem;margin-bottom:5px;">No images in gallery yet</p>
-                        <p style="color:#555;">Check back soon for amazing photos!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            renderGalleryItems(items);
-        }
-
-        function renderGalleryItems(items) {
-            var container = document.getElementById('galleryMasonry');
-            if (!container) return;
-            
-            // Apply filter
-            var filtered = items;
-            if (currentFilter !== 'all') {
-                filtered = items.filter(function(item) {
-                    return item.category === currentFilter;
-                });
-            }
-            
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-gallery-msg">
-                        <i class="fas fa-images"></i>
-                        <p style="font-size:1.2rem;margin-bottom:5px;">No images in this category</p>
-                        <p style="color:#555;">Check back soon for amazing photos!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            var html = '';
-            filtered.forEach(function(item) {
-                var imageSrc = item.image || item.image_url || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-                var title = item.title || 'Untitled';
-                var description = item.description || '';
-                
-                html += '<div class="gallery-item" data-id="' + (item.id || '') + '">';
-                html += '<img src="' + imageSrc + '" alt="' + title + '" loading="lazy" onerror="this.src=\'https://via.placeholder.com/400x300/eee/999?text=Image+Not+Found\';">';
-                html += '<div class="gallery-overlay">';
-                html += '<h3>' + title + '</h3>';
-                html += '<p>' + description + '</p>';
-                html += '</div></div>';
-            });
-            container.innerHTML = html;
-
-            container.querySelectorAll('.gallery-item').forEach(function(el) {
-                el.addEventListener('click', function() {
-                    var img = el.querySelector('img');
-                    openLightbox(img.src, img.alt);
-                });
-            });
-        }
-
-        // ========================================
-        // FILTER BUTTONS
-        // ========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📸 Gallery page loaded');
-
-            var hamburger = document.getElementById('hamburger');
-            var navMenu = document.getElementById('navMenu');
-            if (hamburger && navMenu) {
-                hamburger.addEventListener('click', function() {
-                    hamburger.classList.toggle('active');
-                    navMenu.classList.toggle('active');
-                });
-            }
-            
-            var filterBtns = document.querySelectorAll('.filter-btn');
-            filterBtns.forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    filterBtns.forEach(function(b) {
-                        b.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    currentFilter = this.dataset.filter;
-                    loadGallery();
-                });
-            });
-
-            initLightbox();
-            loadGallery();
-            console.log('✅ Gallery ready');
-        });
-    </script>
+    <script src="js/script.js"></script>
 </body>
 </html>

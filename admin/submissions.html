@@ -5,19 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Submissions - Admin</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
     <link rel="stylesheet" href="../css/admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ========================================
-           SUBMISSIONS - FIXED STYLES
-           ======================================== */
-        
         .submission-new {
             background: rgba(212, 175, 55, 0.05);
             border-left: 3px solid #D4AF37;
@@ -110,20 +101,6 @@
             background: #27ae60;
         }
         
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            color: #999;
-            grid-column: 1 / -1;
-        }
-        
-        .empty-state i {
-            font-size: 4rem;
-            display: block;
-            margin-bottom: 15px;
-            color: #444;
-        }
-        
         .filter-btn.active {
             background: rgba(212, 175, 55, 0.15) !important;
             color: #D4AF37 !important;
@@ -134,7 +111,6 @@
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
         <aside class="admin-sidebar">
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-camera"></i></div>
@@ -150,15 +126,14 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="admin-main">
             <div class="admin-header">
                 <h1><i class="fas fa-envelope"></i> Contact Submissions</h1>
                 <div style="display:flex;gap:10px;">
-                    <button class="btn btn-primary" id="markAllRead">
+                    <button class="btn btn-primary" onclick="markAllRead()">
                         <i class="fas fa-check-double"></i> Mark All Read
                     </button>
-                    <button class="btn btn-success" id="refreshBtn">
+                    <button class="btn btn-success" onclick="loadSubmissions()">
                         <i class="fas fa-sync"></i> Refresh
                     </button>
                 </div>
@@ -167,16 +142,16 @@
             <div class="admin-table-wrapper">
                 <div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                     <span style="color:#b8b8b8;font-size:0.9rem;">Filter:</span>
-                    <button class="filter-btn active" data-filter="all" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
+                    <button class="filter-btn active" data-filter="all" onclick="filterSubmissions('all', this)" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
                         All
                     </button>
-                    <button class="filter-btn" data-filter="new" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
+                    <button class="filter-btn" data-filter="new" onclick="filterSubmissions('new', this)" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
                         <span class="badge-new" style="padding:2px 8px;font-size:0.7rem;">New</span>
                     </button>
-                    <button class="filter-btn" data-filter="read" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
+                    <button class="filter-btn" data-filter="read" onclick="filterSubmissions('read', this)" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
                         <span class="badge-read" style="padding:2px 8px;font-size:0.7rem;">Read</span>
                     </button>
-                    <button class="filter-btn" data-filter="replied" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
+                    <button class="filter-btn" data-filter="replied" onclick="filterSubmissions('replied', this)" style="padding:6px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;background:transparent;color:#b8b8b8;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">
                         <span class="badge-replied" style="padding:2px 8px;font-size:0.7rem;">Replied</span>
                     </button>
                     <span style="margin-left:auto;color:#666;font-size:0.85rem;" id="submissionCount">0 submissions</span>
@@ -196,7 +171,11 @@
                         </tr>
                     </thead>
                     <tbody id="submissionsTable">
-                        <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:40px;color:#666;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading submissions...
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -204,273 +183,6 @@
     </div>
 
     <script src="../js/script.js"></script>
-    <script>
-        // ========================================
-        // SUBMISSIONS - COMPLETE FIXED
-        // ========================================
-
-        var currentFilter = 'all';
-
-        function renderSubmissions() {
-            console.log('📩 Rendering submissions...');
-
-            var table = document.getElementById('submissionsTable');
-            if (!table) {
-                console.error('Table not found!');
-                return;
-            }
-
-            var submissions = DataStore.get('submissions');
-            console.log('📩 Submissions found:', submissions.length);
-
-            // Apply filter
-            var filtered = submissions;
-            if (currentFilter !== 'all') {
-                filtered = submissions.filter(function(s) {
-                    return s.status === currentFilter;
-                });
-            }
-
-            // Update count
-            var countEl = document.getElementById('submissionCount');
-            if (countEl) {
-                countEl.textContent = filtered.length + ' submissions';
-            }
-
-            if (filtered.length === 0) {
-                table.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align:center;padding:60px;color:#666;">
-                            <i class="fas fa-inbox" style="font-size:3rem;display:block;margin-bottom:15px;color:#444;"></i>
-                            <p style="font-size:1.1rem;">No submissions found</p>
-                            <p style="font-size:0.9rem;color:#555;">Submissions from your contact form will appear here</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            var html = '';
-            filtered.forEach(function(s, index) {
-                var statusClass = 'badge-new';
-                if (s.status === 'read') statusClass = 'badge-read';
-                else if (s.status === 'replied') statusClass = 'badge-replied';
-
-                var rowClass = (s.status === 'new') ? 'submission-new' : '';
-                var dateText = s.date || new Date().toLocaleString();
-
-                html += '<tr class="' + rowClass + '">';
-                html += '<td>' + (index + 1) + '</td>';
-                html += '<td><strong>' + (s.name || 'Unknown') + '</strong></td>';
-                html += '<td><a href="mailto:' + (s.email || '') + '" style="color:#D4AF37;text-decoration:none;">' + (s.email || 'N/A') + '</a></td>';
-                html += '<td>' + (s.phone || '-') + '</td>';
-                html += '<td>' + (s.service || '-') + '</td>';
-                html += '<td><span class="' + statusClass + '">' + (s.status || 'new') + '</span></td>';
-                html += '<td style="font-size:0.85rem;color:#888;">' + dateText + '</td>';
-                html += '<td><div class="actions">';
-                html += '<button class="btn-sm btn-view" onclick="viewSubmission(' + s.id + ')"><i class="fas fa-eye"></i></button>';
-
-                if (s.status === 'new') {
-                    html += '<button class="btn-sm btn-edit" onclick="markRead(' + s.id + ')"><i class="fas fa-check"></i></button>';
-                }
-                if (s.status !== 'replied') {
-                    html += '<button class="btn-sm btn-success" onclick="markReplied(' + s.id + ')"><i class="fas fa-reply"></i></button>';
-                }
-                html += '<button class="btn-sm btn-delete" onclick="deleteSubmission(' + s.id + ')"><i class="fas fa-trash"></i></button>';
-                html += '</div></td>';
-                html += '</tr>';
-            });
-
-            table.innerHTML = html;
-        }
-
-        // ========================================
-        // VIEW SUBMISSION
-        // ========================================
-        window.viewSubmission = function(id) {
-            console.log('👁️ Viewing submission:', id);
-
-            var items = DataStore.get('submissions');
-            var sub = null;
-            for (var i = 0; i < items.length; i++) {
-                if (items[i].id === id) {
-                    sub = items[i];
-                    break;
-                }
-            }
-
-            if (!sub) {
-                showToast('Submission not found.', 'error');
-                return;
-            }
-
-            var message = '📩 Message from ' + sub.name + '\n';
-            message = message + '━━━━━━━━━━━━━━━━━━━━━━\n';
-            message = message + '📧 Email: ' + sub.email + '\n';
-            message = message + '📱 Phone: ' + (sub.phone || 'N/A') + '\n';
-            message = message + '📂 Service: ' + (sub.service || 'N/A') + '\n';
-            message = message + '📅 Date: ' + (sub.date || 'N/A') + '\n';
-            message = message + '━━━━━━━━━━━━━━━━━━━━━━\n';
-            message = message + '💬 Message:\n' + (sub.message || 'No message');
-            message = message + '\n━━━━━━━━━━━━━━━━━━━━━━\n';
-            message = message + '📊 Status: ' + (sub.status || 'new');
-
-            alert(message);
-
-            // Mark as read if new
-            if (sub.status === 'new') {
-                var submissions = DataStore.get('submissions');
-                for (var j = 0; j < submissions.length; j++) {
-                    if (submissions[j].id === id) {
-                        submissions[j].status = 'read';
-                        break;
-                    }
-                }
-                DataStore.set('submissions', submissions);
-                renderSubmissions();
-                showToast('✅ Marked as read', 'success');
-            }
-        };
-
-        // ========================================
-        // MARK AS READ
-        // ========================================
-        window.markRead = function(id) {
-            console.log('📖 Marking as read:', id);
-
-            var submissions = DataStore.get('submissions');
-            var found = false;
-            for (var i = 0; i < submissions.length; i++) {
-                if (submissions[i].id === id) {
-                    submissions[i].status = 'read';
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                DataStore.set('submissions', submissions);
-                renderSubmissions();
-                showToast('✅ Marked as read', 'success');
-            } else {
-                showToast('Submission not found.', 'error');
-            }
-        };
-
-        // ========================================
-        // MARK AS REPLIED
-        // ========================================
-        window.markReplied = function(id) {
-            console.log('✉️ Marking as replied:', id);
-
-            var submissions = DataStore.get('submissions');
-            var found = false;
-            for (var i = 0; i < submissions.length; i++) {
-                if (submissions[i].id === id) {
-                    submissions[i].status = 'replied';
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                DataStore.set('submissions', submissions);
-                renderSubmissions();
-                showToast('✅ Marked as replied', 'success');
-            } else {
-                showToast('Submission not found.', 'error');
-            }
-        };
-
-        // ========================================
-        // DELETE SUBMISSION
-        // ========================================
-        window.deleteSubmission = function(id) {
-            console.log('🗑️ Deleting submission:', id);
-
-            if (!confirm('Are you sure you want to delete this submission?')) {
-                return;
-            }
-
-            var submissions = DataStore.get('submissions');
-            var newSubmissions = [];
-            for (var i = 0; i < submissions.length; i++) {
-                if (submissions[i].id !== id) {
-                    newSubmissions.push(submissions[i]);
-                }
-            }
-
-            DataStore.set('submissions', newSubmissions);
-            renderSubmissions();
-            showToast('🗑️ Submission deleted', 'success');
-        };
-
-        // ========================================
-        // MARK ALL AS READ
-        // ========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            var markAllBtn = document.getElementById('markAllRead');
-            if (markAllBtn) {
-                markAllBtn.addEventListener('click', function() {
-                    console.log('📖 Marking all as read...');
-
-                    var submissions = DataStore.get('submissions');
-                    var hasNew = false;
-
-                    for (var i = 0; i < submissions.length; i++) {
-                        if (submissions[i].status === 'new') {
-                            submissions[i].status = 'read';
-                            hasNew = true;
-                        }
-                    }
-
-                    if (hasNew) {
-                        DataStore.set('submissions', submissions);
-                        renderSubmissions();
-                        showToast('✅ All submissions marked as read', 'success');
-                    } else {
-                        showToast('No new submissions to mark', 'info');
-                    }
-                });
-            }
-
-            // Refresh button
-            var refreshBtn = document.getElementById('refreshBtn');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', function() {
-                    renderSubmissions();
-                    showToast('🔄 Refreshed', 'info');
-                });
-            }
-
-            // Filter buttons
-            var filterBtns = document.querySelectorAll('.filter-btn');
-            filterBtns.forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    filterBtns.forEach(function(b) {
-                        b.classList.remove('active');
-                        b.style.background = 'transparent';
-                        b.style.color = '#b8b8b8';
-                    });
-                    this.classList.add('active');
-                    this.style.background = 'rgba(212, 175, 55, 0.15)';
-                    this.style.color = '#D4AF37';
-
-                    currentFilter = this.dataset.filter;
-                    renderSubmissions();
-                });
-            });
-
-            // Initial render
-            console.log('📩 Submissions page loaded');
-            renderSubmissions();
-        });
-
-        // Expose functions globally
-        window.renderSubmissions = renderSubmissions;
-        window.DataStore = DataStore;
-        window.showToast = showToast;
-    </script>
 </body>
 
 </html>

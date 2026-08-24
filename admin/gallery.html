@@ -9,10 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        
         .gallery-container {
             padding: 20px 0;
         }
@@ -633,6 +629,31 @@
             color: #2ecc71;
         }
         
+        .gallery-grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .gallery-grid-header h2 {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+        
+        .gallery-grid-header h2 i {
+            color: #D4AF37;
+        }
+        
+        .gallery-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
         @media (max-width: 768px) {
             .add-image-grid {
                 grid-template-columns: 1fr;
@@ -811,15 +832,15 @@
                 <h2><i class="fas fa-edit"></i> <span id="modalTitle">Edit Image</span></h2>
                 <span class="modal-close" onclick="closeModal()">&times;</span>
             </div>
-            <form id="portfolioForm">
+            <form id="portfolioForm" onsubmit="saveImage(event)">
                 <input type="hidden" id="portfolioId">
                 <div class="form-group">
                     <label>Title <span class="required">*</span></label>
-                    <input type="text" id="portTitle" placeholder="Image title">
+                    <input type="text" id="portTitle" placeholder="Image title" required>
                 </div>
                 <div class="form-group">
                     <label>Category <span class="required">*</span></label>
-                    <select id="portCategory">
+                    <select id="portCategory" required>
                         <option value="custom">Select Category</option>
                         <option value="wedding">Wedding</option>
                         <option value="prewedding">Pre-Wedding</option>
@@ -829,7 +850,7 @@
                 </div>
                 <div class="form-group">
                     <label>Image URL <span class="required">*</span></label>
-                    <input type="text" id="portImage" placeholder="https://example.com/image.jpg" oninput="previewModalImage(this.value)">
+                    <input type="text" id="portImage" placeholder="https://example.com/image.jpg" oninput="previewModalImage(this.value)" required>
                 </div>
                 <div class="form-group">
                     <label>Description</label>
@@ -864,468 +885,7 @@
         </div>
     </div>
 
-    <script>
-        // ========================================
-        // API CONFIGURATION
-        // ========================================
-        const API_URL = '../api/gallery.php';
-
-        // ========================================
-        // TOAST NOTIFICATION
-        // ========================================
-        function showToast(message, type) {
-            if (type === undefined) type = 'info';
-            var existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-
-            var toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            var icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
-            document.body.appendChild(toast);
-
-            setTimeout(function() {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100px)';
-                setTimeout(function() {
-                    toast.remove();
-                }, 500);
-            }, 4000);
-        }
-
-        // ========================================
-        // LOAD GALLERY FROM MYSQL
-        // ========================================
-        async function loadGallery() {
-            console.log('📸 Loading gallery from MySQL...');
-            var container = document.getElementById('adminGalleryGrid');
-
-            try {
-                var response = await fetch(API_URL);
-                var result = await response.json();
-
-                if (result.success) {
-                    var items = result.data || [];
-                    renderGallery(items);
-                    updateStats(items);
-                    console.log('✅ Loaded', items.length, 'images from MySQL');
-                } else {
-                    showToast('Error loading images: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('Could not connect to server. Please check your connection.', 'error');
-                container.innerHTML = `
-                    <div class="empty-gallery-state">
-                        <i class="fas fa-database"></i>
-                        <h3>Connection Error</h3>
-                        <p>Could not connect to database. Please check your server.</p>
-                    </div>
-                `;
-            }
-        }
-
-        // ========================================
-        // RENDER GALLERY
-        // ========================================
-        function renderGallery(items) {
-            var container = document.getElementById('adminGalleryGrid');
-            if (!container) return;
-
-            if (items.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-gallery-state">
-                        <i class="fas fa-images"></i>
-                        <h3>No Images in Gallery</h3>
-                        <p>Add your first image using the form above.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            var html = '';
-            items.forEach(function(item) {
-                var imageSrc = item.image_url || 'https://via.placeholder.com/400x300/eee/999?text=No+Image';
-                html += '<div class="gallery-card">';
-                html += '<div class="image-wrapper">';
-                html += '<img src="' + imageSrc + '" alt="' + item.title + '" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'image-error\\\'><i class=\\\'fas fa-image\\\'></i><p>Image not found</p><small>' + imageSrc + '</small></div>\'">';
-                html += '<div class="image-overlay">';
-                html += '<button class="btn-view" onclick="viewImage(' + item.id + ')"><i class="fas fa-eye"></i> View</button>';
-                html += '<button class="btn-edit" onclick="editImage(' + item.id + ')"><i class="fas fa-edit"></i> Edit</button>';
-                html += '<button class="btn-delete" onclick="deleteImage(' + item.id + ')"><i class="fas fa-trash"></i> Delete</button>';
-                html += '</div></div>';
-                html += '<div class="card-body">';
-                html += '<h3 class="card-title">' + item.title + '</h3>';
-                html += '<span class="card-category">' + (item.category || 'custom') + '</span>';
-                html += '<p class="card-description">' + (item.description || '') + '</p>';
-                html += '</div>';
-                html += '<div class="card-footer">';
-                html += '<span class="image-id">ID: ' + item.id + '</span>';
-                html += '<div class="card-actions">';
-                html += '<button class="btn-edit-sm" onclick="editImage(' + item.id + ')"><i class="fas fa-edit"></i></button>';
-                html += '<button class="btn-delete-sm" onclick="deleteImage(' + item.id + ')"><i class="fas fa-trash"></i></button>';
-                html += '</div></div></div>';
-            });
-            container.innerHTML = html;
-        }
-
-        // ========================================
-        // UPDATE STATS
-        // ========================================
-        function updateStats(items) {
-            var count = items.length;
-            document.getElementById('totalImages').textContent = count;
-
-            var wedding = 0,
-                prewedding = 0,
-                engagement = 0,
-                maternity = 0;
-            items.forEach(function(item) {
-                if (item.category === 'wedding') wedding++;
-                else if (item.category === 'prewedding') prewedding++;
-                else if (item.category === 'engagement') engagement++;
-                else if (item.category === 'maternity') maternity++;
-            });
-
-            document.getElementById('weddingCount').textContent = wedding;
-            document.getElementById('preweddingCount').textContent = prewedding;
-            document.getElementById('engagementCount').textContent = engagement;
-            document.getElementById('maternityCount').textContent = maternity;
-        }
-
-        // ========================================
-        // PREVIEW IMAGE
-        // ========================================
-        function previewImage(url) {
-            var preview = document.getElementById('quickPreview');
-            if (!preview) return;
-
-            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-                preview.innerHTML = '<img src="' + url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div style=\'color:#e74c3c;padding:20px;\'><i class=\'fas fa-exclamation-triangle\' style=\'font-size:2rem;display:block;margin-bottom:10px;\'></i><p>Cannot preview image</p><small>' + url + '</small></div>\'">';
-            } else {
-                preview.innerHTML = '<div class="placeholder"><i class="fas fa-image"></i><p>Image preview will appear here</p><small>Enter a URL above</small></div>';
-            }
-        }
-
-        function previewModalImage(url) {
-            var preview = document.getElementById('modalPreview');
-            if (!preview) return;
-
-            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-                preview.innerHTML = '<img src="' + url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'><i class=\\\'fas fa-image\\\'></i> Image not found</div>\'">';
-            } else {
-                preview.innerHTML = '<div class="no-preview"><i class="fas fa-image"></i> No image preview</div>';
-            }
-        }
-
-        // ========================================
-        // ADD IMAGE TO MYSQL
-        // ========================================
-        window.addImage = async function() {
-            var url = document.getElementById('quickImageUrl').value.trim();
-            var title = document.getElementById('quickImageTitle').value.trim();
-            var category = document.getElementById('quickCategory').value;
-            var description = document.getElementById('quickDescription').value.trim();
-
-            if (!url) {
-                showToast('Please enter an image URL.', 'error');
-                return;
-            }
-            if (!title) {
-                showToast('Please enter a title.', 'error');
-                return;
-            }
-
-            var data = {
-                title,
-                category,
-                image_url: url,
-                description,
-                featured: false
-            };
-
-            try {
-                var response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                var result = await response.json();
-
-                if (result.success) {
-                    showToast('✅ Image added successfully!', 'success');
-                    document.getElementById('quickImageUrl').value = '';
-                    document.getElementById('quickImageTitle').value = '';
-                    document.getElementById('quickDescription').value = '';
-                    document.getElementById('quickPreview').innerHTML = `
-                        <div class="placeholder">
-                            <i class="fas fa-image"></i>
-                            <p>Image preview will appear here</p>
-                            <small>Enter a URL above</small>
-                        </div>
-                    `;
-                    loadGallery();
-                } else {
-                    showToast('Error: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showToast('Connection error. Please try again.', 'error');
-            }
-        };
-
-        // ========================================
-        // BULK ADD IMAGES
-        // ========================================
-        window.bulkAddImages = async function() {
-            var urlInput = document.getElementById('urlInput');
-            var urls = urlInput.value.split('\n').map(u => u.trim()).filter(u => u.length > 0);
-
-            if (urls.length === 0) {
-                showToast('Please paste at least one image URL.', 'error');
-                return;
-            }
-
-            var added = 0,
-                failed = 0;
-
-            for (var url of urls) {
-                try {
-                    var data = {
-                        title: 'Image ' + (added + 1),
-                        category: 'custom',
-                        image_url: url,
-                        description: '',
-                        featured: false
-                    };
-
-                    var response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-                    var result = await response.json();
-
-                    if (result.success) added++;
-                    else failed++;
-                } catch (e) {
-                    failed++;
-                }
-            }
-
-            showToast('✅ ' + added + ' images added, ' + failed + ' failed', 'success');
-            urlInput.value = '';
-            loadGallery();
-        };
-
-        // ========================================
-        // VIEW IMAGE
-        // ========================================
-        window.viewImage = function(id) {
-            fetch(API_URL + '?id=' + id)
-                .then(r => r.json())
-                .then(result => {
-                    if (result.success && result.data) {
-                        var item = result.data;
-                        document.getElementById('viewImage').src = item.image_url || '';
-                        document.getElementById('viewTitleText').textContent = item.title || 'Untitled';
-                        document.getElementById('viewCategory').textContent = item.category || 'custom';
-                        document.getElementById('viewDescription').textContent = item.description || '';
-                        document.getElementById('viewId').textContent = item.id;
-                        document.getElementById('viewPath').textContent = item.image_url || '';
-                        document.getElementById('viewModal').classList.add('active');
-                    }
-                });
-        };
-
-        function closeViewModal() {
-            document.getElementById('viewModal').classList.remove('active');
-        }
-
-        // ========================================
-        // EDIT IMAGE
-        // ========================================
-        window.editImage = function(id) {
-            fetch(API_URL + '?id=' + id)
-                .then(r => r.json())
-                .then(result => {
-                    if (result.success && result.data) {
-                        var item = result.data;
-                        document.getElementById('portfolioId').value = item.id;
-                        document.getElementById('portTitle').value = item.title || '';
-                        document.getElementById('portCategory').value = item.category || 'custom';
-                        document.getElementById('portImage').value = item.image_url || '';
-                        document.getElementById('portDescription').value = item.description || '';
-                        document.getElementById('modalTitle').textContent = '✏️ Edit Image';
-                        document.getElementById('portfolioModal').classList.add('active');
-
-                        var preview = document.getElementById('modalPreview');
-                        if (item.image_url) {
-                            preview.innerHTML = '<img src="' + item.image_url + '" alt="Preview" onerror="this.parentElement.innerHTML=\'<div class=\\\'no-preview\\\'><i class=\\\'fas fa-image\\\'></i> Image not found</div>\'">';
-                        } else {
-                            preview.innerHTML = '<div class="no-preview"><i class="fas fa-image"></i> No image preview</div>';
-                        }
-                    }
-                });
-        };
-
-        // ========================================
-        // DELETE IMAGE
-        // ========================================
-        window.deleteImage = function(id) {
-            if (!confirm('Delete this image?')) return;
-
-            fetch(API_URL + '?id=' + id, {
-                    method: 'DELETE'
-                })
-                .then(r => r.json())
-                .then(result => {
-                    if (result.success) {
-                        showToast('Image deleted successfully!', 'success');
-                        loadGallery();
-                    } else {
-                        showToast('Error deleting image', 'error');
-                    }
-                });
-        };
-
-        // ========================================
-        // CLEAR ALL IMAGES
-        // ========================================
-        window.clearAllImages = function() {
-            if (!confirm('⚠️ Delete ALL images? This cannot be undone!')) return;
-
-            fetch(API_URL)
-                .then(r => r.json())
-                .then(result => {
-                    if (result.success) {
-                        var items = result.data || [];
-                        var promises = items.map(item => {
-                            return fetch(API_URL + '?id=' + item.id, {
-                                method: 'DELETE'
-                            });
-                        });
-                        Promise.all(promises).then(() => {
-                            showToast('All images cleared!', 'success');
-                            loadGallery();
-                        });
-                    }
-                });
-        };
-
-        // ========================================
-        // SAVE EDITED IMAGE
-        // ========================================
-        document.getElementById('portfolioForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            var id = document.getElementById('portfolioId').value;
-            var title = document.getElementById('portTitle').value.trim();
-            var category = document.getElementById('portCategory').value;
-            var image = document.getElementById('portImage').value.trim();
-            var description = document.getElementById('portDescription').value.trim();
-
-            if (!title || !category || !image) {
-                showToast('Please fill in all fields.', 'error');
-                return;
-            }
-
-            var data = {
-                id,
-                title,
-                category,
-                image_url: image,
-                description,
-                featured: false
-            };
-
-            try {
-                var response = await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                var result = await response.json();
-
-                if (result.success) {
-                    showToast('✅ Image updated successfully!', 'success');
-                    document.getElementById('portfolioModal').classList.remove('active');
-                    loadGallery();
-                } else {
-                    showToast('Error: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showToast('Connection error', 'error');
-            }
-        });
-
-        // ========================================
-        // CLOSE MODAL
-        // ========================================
-        function closeModal() {
-            document.getElementById('portfolioModal').classList.remove('active');
-        }
-
-        // ========================================
-        // INITIALIZE
-        // ========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📸 Admin Gallery - MySQL Version');
-
-            // Load gallery
-            loadGallery();
-
-            // Close modal on outside click
-            document.querySelectorAll('.modal').forEach(function(modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        this.classList.remove('active');
-                    }
-                });
-            });
-
-            // Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    document.querySelectorAll('.modal.active').forEach(function(m) {
-                        m.classList.remove('active');
-                    });
-                }
-            });
-
-            // Logout
-            var logoutBtn = document.querySelector('.logout');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    localStorage.removeItem('adminAuth');
-                    localStorage.removeItem('adminToken');
-                    localStorage.removeItem('adminUser');
-                    window.location.href = '../index.html';
-                });
-            }
-
-            console.log('✅ Admin Gallery Ready');
-        });
-
-        window.loadGallery = loadGallery;
-        window.closeModal = closeModal;
-        window.closeViewModal = closeViewModal;
-        window.addImage = addImage;
-        window.bulkAddImages = bulkAddImages;
-        window.editImage = editImage;
-        window.deleteImage = deleteImage;
-        window.viewImage = viewImage;
-        window.clearAllImages = clearAllImages;
-        window.showToast = showToast;
-        window.previewImage = previewImage;
-        window.previewModalImage = previewModalImage;
-    </script>
+    <script src="../js/script.js"></script>
 </body>
 
 </html>
