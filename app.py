@@ -652,6 +652,20 @@ def serve_static(path):
         return response({'error': 'API endpoint not found'}, 404)
     return send_from_directory('.', path)
 
+@app.route('/api/debug-env', methods=['GET'])
+def debug_env():
+    """Debug environment variables - Shows what Render is actually passing"""
+    return response({
+        'DB_HOST': os.environ.get('DB_HOST', 'NOT SET'),
+        'DB_PORT': os.environ.get('DB_PORT', 'NOT SET'),
+        'DB_NAME': os.environ.get('DB_NAME', 'NOT SET'),
+        'DB_USER': os.environ.get('DB_USER', 'NOT SET'),
+        'DB_PASSWORD': '***' if os.environ.get('DB_PASSWORD') else 'NOT SET',
+        'AUTH_SECRET': '***' if os.environ.get('AUTH_SECRET') else 'NOT SET',
+        'FLASK_ENV': os.environ.get('FLASK_ENV', 'NOT SET'),
+        'ALL_ENV_VARS': dict(os.environ)  # Shows ALL environment variables
+    })
+
 # ========================================
 # RUN APPLICATION
 # ========================================
