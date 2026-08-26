@@ -1,4 +1,4 @@
-"""Mahadev Photography API - Complete Fixed Version"""
+"""Mahadev Photography API - Complete Production Version"""
 
 import base64
 import hashlib
@@ -9,101 +9,83 @@ import time
 from datetime import datetime
 from functools import wraps
 
-# Load .env first
+try:
+    import pymysql
+except ImportError:
+    pymysql = None
+
+from flask import Flask, jsonify, request, g, send_from_directory
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# Load environment variables
 try:
     from dotenv import load_dotenv
     load_dotenv()
-    print("✅ .env file loaded successfully")
-except ImportError:
-    print("⚠️ python-dotenv not installed, using system environment variables")
-except Exception as e:
-    print(f"⚠️ Error loading .env: {e}")
-
-try:
-    import pymysql
-    print("✅ pymysql imported successfully")
-except ImportError as e:
-    print(f"❌ pymysql not installed: {e}")
-    print("Run: pip install pymysql")
-    exit(1)
-
-try:
-    from flask import Flask, jsonify, request, g, send_from_directory
-    print("✅ Flask imported successfully")
-except ImportError as e:
-    print(f"❌ Flask not installed: {e}")
-    print("Run: pip install flask")
-    exit(1)
-
-try:
-    from werkzeug.security import generate_password_hash, check_password_hash
-    print("✅ werkzeug imported successfully")
-except ImportError as e:
-    print(f"❌ werkzeug not installed: {e}")
-    print("Run: pip install werkzeug")
-    exit(1)
+except:
+    pass
 
 app = Flask(__name__, static_folder='.')
 app.config['JSON_SORT_KEYS'] = False
 app.config['JSON_AS_ASCII'] = False
 
 # ========================================
-# PRINT ENVIRONMENT FOR DEBUGGING
+# DATABASE CONNECTION - NO HARDCODED PASSWORDS
 # ========================================
-
-print("\n=== ENVIRONMENT VARIABLES ===")
-print(f"DB_HOST: {os.environ.get('DB_HOST', 'NOT SET')}")
-print(f"DB_PORT: {os.environ.get('DB_PORT', 'NOT SET')}")
-print(f"DB_NAME: {os.environ.get('DB_NAME', 'NOT SET')}")
-print(f"DB_USER: {os.environ.get('DB_USER', 'NOT SET')}")
-print(f"DB_PASSWORD: {'*' * len(os.environ.get('DB_PASSWORD', '')) if os.environ.get('DB_PASSWORD') else 'NOT SET'}")
-print("==============================\n")
-
-# ========================================
-# DATABASE CONNECTION (FIXED)
-# ========================================
-
-def get_db_config():
-    """Get database configuration from environment with defaults"""
-    return {
-        'host': os.environ.get('DB_HOST', 'localhost'),
-        'port': int(os.environ.get('DB_PORT', '3306')),
-        'user': os.environ.get('DB_USER', 'root'),
-        'password': os.environ.get('DB_PASSWORD', ''),
-        'database': os.environ.get('DB_NAME', 'mahadev_photography'),
-        'charset': 'utf8mb4',
-        'cursorclass': pymysql.cursors.DictCursor,
-        'autocommit': True,
-        'connect_timeout': 10
-    }
 
 def get_db():
-    """Get database connection with connection pooling"""
+    """Get database connection from environment variables ONLY"""
+    if pymysql is None:
+        print("❌ pymysql not installed")
+        return None
+    
     if not hasattr(g, 'db'):
         try:
-            config = get_db_config()
-            print(f"🔌 Connecting to MySQL: {config['host']}:{config['port']}/{config['database']} as {config['user']}")
-            g.db = pymysql.connect(**config)
-            print("✅ Database connection established")
+            # Get ALL credentials from environment ONLY
+            host = os.environ.get('DB_HOST')
+            port = os.environ.get('DB_PORT')
+            user = os.environ.get('DB_USER')
+            password = os.environ.get('DB_PASSWORD')
+            database = os.environ.get('DB_NAME')
+            
+            # Check if all required variables are set
+            if not all([host, port, user, password, database]):
+                missing = []
+                if not host: missing.append('DB_HOST')
+                if not port: missing.append('DB_PORT')
+                if not user: missing.append('DB_USER')
+                if not password: missing.append('DB_PASSWORD')
+                if not database: missing.append('DB_NAME')
+                print(f"❌ Missing environment variables: {', '.join(missing)}")
+                return None
+            
+            print(f"🔌 Connecting to: {host}:{port}/{database}")
+            
+            g.db = pymysql.connect(
+                host=host,
+                port=int(port),
+                user=user,
+                password=password,
+                database=database,
+                charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor,
+                autocommit=True,
+                connect_timeout=30
+            )
+            print("✅ Database connected successfully!")
+            
         except pymysql.err.OperationalError as e:
-            print(f"❌ Database connection error: {e}")
-            print("\nPossible fixes:")
-            print("1. Make sure MySQL is running: 'net start MySQL80'")
-            print("2. Check your password in .env file")
-            print("3. Check database name: 'mahadev_photography'")
+            print(f"❌ Database error: {e}")
             return None
         except Exception as e:
-            print(f"❌ Unexpected error: {e}")
+            print(f"❌ Database connection error: {e}")
             return None
     return g.db
 
 @app.teardown_appcontext
 def close_db(error):
-    """Close database connection after request"""
     if hasattr(g, 'db'):
         try:
             g.db.close()
-            print("🔌 Database connection closed")
         except:
             pass
 
@@ -111,16 +93,14 @@ def db():
     return get_db()
 
 # ========================================
-# RESPONSE HELPERS
+# HELPERS
 # ========================================
 
 def response(data, status=200):
-    """Send JSON response"""
     return jsonify(data), status
 
 @app.after_request
 def cors(res):
-    """Add CORS headers"""
     origin = os.environ.get('CORS_ORIGIN', '*')
     res.headers['Access-Control-Allow-Origin'] = origin
     res.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
@@ -129,7 +109,6 @@ def cors(res):
     return res
 
 def get_input():
-    """Get JSON input from request"""
     return request.get_json(silent=True) or {}
 
 # ========================================
@@ -137,13 +116,12 @@ def get_input():
 # ========================================
 
 def generate_token(user):
-    """Generate JWT-like token"""
     payload = {
         'id': user['id'],
         'email': user['email'],
         'name': user['name'],
         'role': user['role'],
-        'exp': int(time.time()) + 43200  # 12 hours
+        'exp': int(time.time()) + 43200
     }
     body = base64.urlsafe_b64encode(
         json.dumps(payload, separators=(',', ':')).encode()
@@ -151,8 +129,8 @@ def generate_token(user):
     
     secret = os.environ.get('AUTH_SECRET')
     if not secret:
+        print("⚠️ AUTH_SECRET not set, using default")
         secret = 'default-secret-change-me-in-production'
-        print("WARNING: Using default AUTH_SECRET. Set this in environment variables!")
     
     signature = hmac.new(
         secret.encode(),
@@ -163,15 +141,12 @@ def generate_token(user):
     return f"{body}.{signature}"
 
 def verify_token(token):
-    """Verify and decode token"""
     try:
         if not token or '.' not in token:
             return None
         
         body, signature = token.split('.', 1)
-        secret = os.environ.get('AUTH_SECRET')
-        if not secret:
-            secret = 'default-secret-change-me-in-production'
+        secret = os.environ.get('AUTH_SECRET', 'default-secret-change-me-in-production')
         
         expected = hmac.new(
             secret.encode(),
@@ -192,12 +167,10 @@ def verify_token(token):
             return None
         
         return payload
-    except Exception as e:
-        print(f"Token verification error: {e}")
+    except Exception:
         return None
 
 def require_auth(f):
-    """Decorator to require authentication"""
     @wraps(f)
     def decorated(*args, **kwargs):
         auth_header = request.headers.get('Authorization', '')
@@ -215,12 +188,11 @@ def require_auth(f):
     return decorated
 
 # ========================================
-# AUTH ENDPOINT (FIXED)
+# AUTH ENDPOINT
 # ========================================
 
 @app.route('/api/auth.py', methods=['POST', 'OPTIONS'])
 def auth():
-    """Admin login"""
     if request.method == 'OPTIONS':
         return response({})
     
@@ -235,23 +207,21 @@ def auth():
     
     conn = db()
     if not conn:
-        print("❌ No database connection")
+        print("❌ Database connection failed")
         return response({'error': 'Database connection failed. Please check your configuration.'}, 500)
     
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT * FROM users WHERE LOWER(email) = %s LIMIT 1",
-                (email,)
-            )
+            cur.execute("SELECT * FROM users WHERE LOWER(email) = %s LIMIT 1", (email,))
             user = cur.fetchone()
             
             if not user:
                 print(f"❌ User not found: {email}")
                 return response({'error': 'Invalid email or password'}, 401)
             
+            print(f"✅ User found: {user['name']}")
+            
             stored = user['password']
-            print(f"🔐 Found user: {user['name']} ({user['email']})")
             
             # Check password (supports both hashed and plain)
             valid = False
@@ -271,13 +241,10 @@ def auth():
             if not stored.startswith(('pbkdf2:', 'scrypt:', '$2y$', '$2a$', '$2b$')):
                 try:
                     hashed = generate_password_hash(password)
-                    cur.execute(
-                        "UPDATE users SET password = %s WHERE id = %s",
-                        (hashed, user['id'])
-                    )
-                    print(f"✅ Password upgraded for: {email}")
-                except Exception as e:
-                    print(f"⚠️ Password upgrade failed: {e}")
+                    cur.execute("UPDATE users SET password = %s WHERE id = %s", (hashed, user['id']))
+                    print("✅ Password upgraded")
+                except:
+                    pass
             
             token = generate_token(user)
             print(f"✅ Login successful: {email}")
@@ -297,12 +264,51 @@ def auth():
         return response({'error': f'Login failed: {str(e)}'}, 500)
 
 # ========================================
+# TEST DATABASE ENDPOINT
+# ========================================
+
+@app.route('/api/test-db', methods=['GET'])
+def test_db():
+    """Test database connection"""
+    conn = db()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1 as test, NOW() as time, DATABASE() as db, USER() as user")
+                result = cur.fetchone()
+                
+                cur.execute("SELECT COUNT(*) as count FROM users")
+                user_count = cur.fetchone()
+                
+                return response({
+                    'success': True,
+                    'message': 'Database connected successfully!',
+                    'host': os.environ.get('DB_HOST'),
+                    'database': result.get('db') if result else None,
+                    'time': result.get('time') if result else None,
+                    'user': result.get('user') if result else None,
+                    'users_count': user_count.get('count') if user_count else 0
+                })
+        except Exception as e:
+            return response({
+                'success': False,
+                'error': str(e)
+            }, 500)
+    return response({
+        'success': False,
+        'error': 'Database connection failed',
+        'host': os.environ.get('DB_HOST', 'NOT SET'),
+        'port': os.environ.get('DB_PORT', 'NOT SET'),
+        'database': os.environ.get('DB_NAME', 'NOT SET'),
+        'user': os.environ.get('DB_USER', 'NOT SET')
+    }, 500)
+
+# ========================================
 # GALLERY ENDPOINT
 # ========================================
 
 @app.route('/api/gallery.py', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def gallery():
-    """Gallery CRUD operations"""
     if request.method == 'OPTIONS':
         return response({})
     
@@ -388,7 +394,6 @@ def gallery():
 
 @app.route('/api/packages.py', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def packages():
-    """Packages CRUD operations"""
     if request.method == 'OPTIONS':
         return response({})
     
@@ -493,7 +498,6 @@ def packages():
 
 @app.route('/api/submissions.py', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def submissions():
-    """Contact form submissions"""
     if request.method == 'OPTIONS':
         return response({})
     
@@ -562,12 +566,9 @@ def submissions():
             
             status = data.get('status')
             if status not in ('new', 'read', 'replied'):
-                return response({'error': 'Invalid status. Must be new, read, or replied'}, 400)
+                return response({'error': 'Invalid status'}, 400)
             
-            cur.execute(
-                "UPDATE submissions SET status = %s WHERE id = %s",
-                (status, submission_id)
-            )
+            cur.execute("UPDATE submissions SET status = %s WHERE id = %s", (status, submission_id))
             return response({'success': True, 'message': 'Status updated'})
     except Exception as e:
         print(f"❌ Submissions error: {e}")
@@ -578,19 +579,10 @@ def submissions():
 # ========================================
 
 @app.route('/api/dashboard.py', methods=['GET', 'OPTIONS'])
+@require_auth
 def dashboard():
-    """Dashboard statistics"""
     if request.method == 'OPTIONS':
         return response({})
-    
-    auth_header = request.headers.get('Authorization', '')
-    if not auth_header.startswith('Bearer '):
-        return response({'error': 'Authentication required'}, 401)
-    
-    token = auth_header[7:]
-    user = verify_token(token)
-    if not user:
-        return response({'error': 'Invalid or expired session'}, 401)
     
     conn = db()
     if not conn:
@@ -613,10 +605,6 @@ def dashboard():
             cur.execute("SELECT * FROM submissions ORDER BY created_at DESC LIMIT 5")
             recent_submissions = cur.fetchall()
             
-            for sub in recent_submissions:
-                if sub.get('created_at'):
-                    sub['created_at'] = sub['created_at'].isoformat() if hasattr(sub['created_at'], 'isoformat') else str(sub['created_at'])
-            
             return response({
                 'success': True,
                 'data': {
@@ -637,7 +625,6 @@ def dashboard():
 
 @app.route('/api/health', methods=['GET', 'OPTIONS'])
 def health():
-    """Health check endpoint"""
     if request.method == 'OPTIONS':
         return response({})
     
@@ -652,7 +639,7 @@ def health():
     })
 
 # ========================================
-# SERVE STATIC FILES
+# STATIC FILES
 # ========================================
 
 @app.route('/')
@@ -682,16 +669,3 @@ if __name__ == '__main__':
     print("\n" + "="*50 + "\n")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
-    
-@app.route('/api/debug-env', methods=['GET'])
-def debug_env():
-    """Debug environment variables"""
-    return response({
-        'DB_HOST': os.environ.get('DB_HOST', 'NOT SET'),
-        'DB_PORT': os.environ.get('DB_PORT', 'NOT SET'),
-        'DB_NAME': os.environ.get('DB_NAME', 'NOT SET'),
-        'DB_USER': os.environ.get('DB_USER', 'NOT SET'),
-        'DB_PASSWORD': '***' if os.environ.get('DB_PASSWORD') else 'NOT SET',
-        'DB_SSL': os.environ.get('DB_SSL', 'NOT SET'),
-        'FLASK_ENV': os.environ.get('FLASK_ENV', 'NOT SET')
-    })
