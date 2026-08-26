@@ -682,3 +682,16 @@ if __name__ == '__main__':
     print("\n" + "="*50 + "\n")
     
     app.run(host='0.0.0.0', port=port, debug=debug)
+    
+@app.route('/api/debug-env', methods=['GET'])
+def debug_env():
+    """Debug environment variables"""
+    return response({
+        'DB_HOST': os.environ.get('DB_HOST', 'NOT SET'),
+        'DB_PORT': os.environ.get('DB_PORT', 'NOT SET'),
+        'DB_NAME': os.environ.get('DB_NAME', 'NOT SET'),
+        'DB_USER': os.environ.get('DB_USER', 'NOT SET'),
+        'DB_PASSWORD': '***' if os.environ.get('DB_PASSWORD') else 'NOT SET',
+        'DB_SSL': os.environ.get('DB_SSL', 'NOT SET'),
+        'FLASK_ENV': os.environ.get('FLASK_ENV', 'NOT SET')
+    })
